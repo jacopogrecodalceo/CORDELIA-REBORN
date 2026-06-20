@@ -1,0 +1,31 @@
+// new_cordelia.lark
+
+%import common.WS
+%ignore WS
+
+AT             : "@"
+IDENT          : /[a-zA-Z0-9]+/
+NEWLINE        : /\n/
+INT            : /[0-9]+/
+WORD           : /[a-z]+/           // for words like "talea", "in"
+NOTE           : /[a-g][b#]?[0-9]+/  // for notes like d4, db4, d2
+DURATION       : /[0-9]+[mavd]/     // for 3m, 5a, 6a
+GROUP          : /\([^)]+\)x[0-9]+/ // for (d4 1 3m)x4
+
+statement      : instruments NEWLINE score
+               | instruments score
+
+instruments    : instrument ("," instrument)* (","? "and" instrument)?
+instrument     : AT IDENT
+
+// Score is a sequence of items (space-separated, not "and")
+score          : score_item+
+
+score_item     : variable
+               | WORD
+               | INT
+               | NOTE
+               | DURATION
+               | GROUP
+
+variable       : AT IDENT-

@@ -1,0 +1,8 @@
+; ── Staff {{ staff.instr_id }} UPDATE ───────────────────────────
+gk{{ staff.instr_id }}_dur = {{ staff.staff_dur }}
+
+gi{{ staff.instr_id }}_talea ftgen {{ staff.talea_ft_num }}, 0, {{ ftgen_size }}, -2, {{ staff.talea | length }}, {{ staff.talea | join(', ') }}
+
+{% for p in params if p != 'talea' %}
+gi{{ staff.instr_id }}_{{ p }} ftgen {{ param_data[p].ft_num }}, 0, {{ ftgen_size }}, -2, {{ param_data[p].values | length }}, {{ param_data[p].values | join(', ') }}
+{% endfor %}

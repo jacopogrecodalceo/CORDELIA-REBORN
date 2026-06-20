@@ -1,0 +1,55 @@
+%%{init: {'themeVariables': {'fontFamily': 'Departure Mono'}}}%%
+flowchart TD
+	input["CORDELIA INPUT"] --> parsing_statements["parsing statements"]
+	
+	
+	subgraph PARSE
+		parsing_statements --> INSTRUMENTs
+		parsing_statements --> VARIABLEs
+
+		VARIABLEs --> global["global score parameter"]
+		VARIABLEs --> instrument_vars["instrument variables"]
+		VARIABLEs --> local_vars["local variables"]
+
+		global --> p["pulse = p"]
+		global --> ts["main time signature = ts"]
+		global --> acts["main accents = acts"]
+
+		INSTRUMENTs --> NAME
+		NAME --> NAME_AND["and"]
+		NAME --> NAME_COMMA["comma"]
+		NAME_COMMA --> |"more instruments statements"| INSTRUMENTs
+
+			
+		INSTRUMENTs --> SCORE
+
+		SCORE --> mandatory
+		SCORE --> optional
+		SCORE --> optional+
+
+		mandatory --> TALEAE["TALEAE<br><i>rhythm</i>"]
+		TALEAE --> TALEAE_AND["and"]
+		TALEAE --> TALEAE_COMMA["comma"]
+		TALEAE_COMMA --> |"more talea statements"| TALEAE
+
+
+		optional --> COLORES["COLORES<br><i>pitch</i>"]
+		COLORES --> COLORES_AND["and"]
+		COLORES -->  COLORES_COMMA["comma"]
+		COLORES_COMMA --> |"more colores statements"| COLORES
+
+		optional+ --> DUR
+		optional+ --> DYN
+		optional+ --> ENV
+		optional+ --> SPACE
+
+		DUR --> standard["based on talea"]
+		DUR --> fill["fill: fill without rests"]
+		DUR --> fix["fix: fixed duration"]
+		DUR --> when["when: when event happens"]
+
+		DYN --> accents
+		DYN --> array
+
+	end
+
