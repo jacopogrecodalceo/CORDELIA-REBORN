@@ -13,7 +13,7 @@ _a new horizon_
 - *repeat* — yep, but only if it is important
 - make it **organic** (and ecologic): *code your own choices inside algorithm* (*)
 - *viscosity* is everything: everything must be interchangeable. everything must exist at the same time as a parameter. In this direction algorithm becomes *idea* or a *motif* not *pattern*
-- if you are thinking language outside composition and sound, u not right. it is like [this](https://en.wikipedia.org/wiki/Mind%E2%80%93body_problem).
+- if you are thinking language outside composition and sound, u wrong. check [this](https://en.wikipedia.org/wiki/Mind%E2%80%93body_problem).
 - **poetry**, please do not forget poetry. Audience read: they must sing and sing loudly in their head.
 - linear acceleration/deceleration, random and all other boredom stuff are **banished**, *to speak that word*.
 - oh yes, and stop using uppercase (unless u german or after a ".") — useless boring prioritisation (i mean, im really thinking of banning them)

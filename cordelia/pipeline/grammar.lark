@@ -8,26 +8,23 @@ program: _NL* (unit _NL*)*
 _NL: NEWLINE
 
 // ─── UNIT ────────────────────────────────────────────────────────────────────
-unit: phrase
-	| statement
+unit: phrase | statement
 
 // ─── STATEMENT ───────────────────────────────────────────────────────────────
 // header + score + closing delimiter
-statement: header score_line delim
+statement: header score (_DELIM | _NL)
 
 // ─── PHRASE ──────────────────────────────────────────────────────────────────
 // header + modifiers + score segments separated/closed by delimiters
-phrase: header modifier* DELIM score_line (delim score_line)*
-      | header modifier* (_NL modifier+)* delim score_line (delim score_line)*
-
-delim: DELIM | _NL
+phrase: header modifier* _DELIM score ((_DELIM | _NL) score)*
+		| header modifier* (_NL modifier+)* (_DELIM | _NL) score ((_DELIM | _NL) score)*
 
 // ─── HEADER ──────────────────────────────────────────────────────────────────
 header: "@" IDENTIFIER
 
 // ─── MODIFIERS ───────────────────────────────────────────────────────────────
 modifier: dot_mod
-        | colon_mod
+	  | colon_mod
 
 dot_mod:   "." IDENTIFIER call?
 colon_mod: ":" IDENTIFIER call?
@@ -42,17 +39,17 @@ arg: IDENTIFIER
    | STRING
 
 // ─── DELIMITER ───────────────────────────────────────────────────────────────
-DELIM: "·" | "|"
+_DELIM: "·" | "|"
 
 // ─── SCORE ───────────────────────────────────────────────────────────────────
-score_line: score_atom+
+score: score_atom+
 
 score_atom: IDENTIFIER
-           | NUMBER
-           | SYMBOL
-           | LBRACE
-           | RBRACE
-           | ","
+				| NUMBER
+				| SYMBOL
+				| LBRACE
+				| RBRACE
+				| ","
 
 // ─── TOKENS ──────────────────────────────────────────────────────────────────
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_#]*/
