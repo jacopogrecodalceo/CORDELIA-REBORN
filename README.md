@@ -26,5 +26,11 @@ Live coding to become emancipated cannot repeat itself, it must look in these di
 
 ---
 
+## *CORDELIA*'s DELIRIUM
+why do we need uppercase? why do we need commas?
+
+## *CORDELIA*'s NEWs
+- envelopes will have names of chemistry elements — this is called "amazing" (i.e. hyd, oxy, tit, mol, nio)
+
 ## *CORDELIA*'s TIPs
 - just use one compileOrc at the end not many for each score. just an unique one at the end of the cycle

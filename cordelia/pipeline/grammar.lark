@@ -1,63 +1,47 @@
-// ─── WHITESPACE ──────────────────────────────────────────────────────────────
 %import common.NEWLINE
 %ignore /[ \t\r]+/
 
+_NL:    NEWLINE
+_DELIM: "·" | "|"
+
 // ─── ENTRY ───────────────────────────────────────────────────────────────────
-program: _NL* (unit _NL*)*
 
-_NL: NEWLINE
-
-// ─── UNIT ────────────────────────────────────────────────────────────────────
 unit: phrase | statement
 
 // ─── STATEMENT ───────────────────────────────────────────────────────────────
-// header + score + closing delimiter
-statement: header score (_DELIM | _NL)
+
+statement: header item+
 
 // ─── PHRASE ──────────────────────────────────────────────────────────────────
-// header + modifiers + score segments separated/closed by delimiters
-phrase: header modifier* _DELIM score ((_DELIM | _NL) score)*
-		| header modifier* (_NL modifier+)* (_DELIM | _NL) score ((_DELIM | _NL) score)*
+
+phrase:  header modifier* (_NL modifier+)* score
+score:   (_DELIM | _NL) quality ((_DELIM | _NL) quality)*
+quality: item+
 
 // ─── HEADER ──────────────────────────────────────────────────────────────────
-header: "@" IDENTIFIER
+
+header: "@" NAME
 
 // ─── MODIFIERS ───────────────────────────────────────────────────────────────
-modifier: dot_mod
-	  | colon_mod
 
-dot_mod:   "." IDENTIFIER call?
-colon_mod: ":" IDENTIFIER call?
+modifier: dot_mod | colon_mod
 
-// ─── CALL ────────────────────────────────────────────────────────────────────
-call: "(" [arg_list] ")"
+dot_mod:   "." NAME array?
+colon_mod: ":" NAME array?
 
-arg_list: arg ("," arg)*
+// ─── ARRAY ───────────────────────────────────────────────────────────────────
 
-arg: IDENTIFIER
-   | NUMBER
-   | STRING
+array: "(" item* ")"
+		| "{" item* "}"
 
-// ─── DELIMITER ───────────────────────────────────────────────────────────────
-_DELIM: "·" | "|"
+// ─── ITEM ────────────────────────────────────────────────────────────────────
 
-// ─── SCORE ───────────────────────────────────────────────────────────────────
-score: score_atom+
-
-score_atom: IDENTIFIER
-				| NUMBER
-				| SYMBOL
-				| LBRACE
-				| RBRACE
-				| ","
+item: FUNC array   -> func
+    | VALUE        -> atom
+    | array        -> atom
 
 // ─── TOKENS ──────────────────────────────────────────────────────────────────
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_#]*/
-NUMBER:     /-?\d+(\.\d+)?/
-STRING:     /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
-LBRACE:     "{"
-RBRACE:     "}"
-SYMBOL:     /[#b]/
 
-COMMENT: ";" /[^\n]*/
-%ignore COMMENT
+NAME:  /[a-zA-Z_][a-zA-Z0-9_]*/
+FUNC:  /[a-zA-Z_][a-zA-Z0-9_]*(?=[\(\{])/
+VALUE: /[^\s·|@.:{}\(\)\n]+/

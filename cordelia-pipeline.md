@@ -1,5 +1,8 @@
 # CORDELIA PIPELINE
 
+In the beginning there's the LEXER. Has one job, split input code into chunks
+`source → lexer.py → list[str] (raw chunks) → parser.py → list[Instrument | Variable]`
+
    INPUT
       ↓
    PARSER
@@ -32,5 +35,3 @@ staff:
 - instrument
 - modifier
 - variable
-
-This is a classic phase-based scheduler — the same approach used by TidalCycles internally.

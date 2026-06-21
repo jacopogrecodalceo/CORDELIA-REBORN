@@ -1,0 +1,3 @@
+import corpus
+
+print(corpus)
