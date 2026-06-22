@@ -44,4 +44,4 @@ item: FUNC array   -> func
 
 NAME:  /[a-zA-Z_][a-zA-Z0-9_]*/
 FUNC:  /[a-zA-Z_][a-zA-Z0-9_]*(?=[\(\{])/
-VALUE: /[^\s·|@.:{}\(\)\n]+/
+VALUE: /[^\s·|@.:{}\(\)\n][^\s·|@:{}\(\)\n]*/

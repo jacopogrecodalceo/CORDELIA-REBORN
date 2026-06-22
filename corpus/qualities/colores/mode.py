@@ -1,11 +1,37 @@
-from __future__ import annotations
-from cordelia.pipeline.transformer import Quality
-from cordelia.data import data
+"""
+=========================================
 
-def mode(quality: Quality) -> tuple[str, Quality] | None:
-	if not quality.items or quality.items[0] in data.modes:
-		return None
-	return "colores", Quality(items=quality.items[1:])
+MATCHES
+-------
+	dorian        → explicit mode
+
+RETURNS
+-------
+	Colores(pattern=[1,0,0,1,0,0,1,0], cycle=8)
+"""
+
+import cordelia.const
+from corpus.qualities.colores import *
+
+def match(items: list) -> bool:
+	if items[0] in cordelia.const.data.modes:
+		return True
+	return False
+
+def mode(items: list) -> Colores:
+	mode = items[0]
+
+	# default
+	origin = 'b'
+	degrees = [random.randint(-9, 9)]*12
+	
+	# Parse remaining arguments
+	if len(items) == 2:
+		origin = items[1]
+	elif len(items) > 2:
+		degrees = items[1:]
+	
+	return Colores(degrees)
 
 if __name__ == '__main__':
 	verse = "dorian"

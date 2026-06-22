@@ -1,4 +1,6 @@
  
 
 
-@careless.fl{osc{1/6 1/32 lear} lf{7}}·wn*4·p·hader·locrian c 9?
+@careless.fl{osc{1/6 1/32 lear} lf{7}}·wn*4·p·hader·locrian c. 9?
+
+@cordelia.del{osc{1/6 1/32 lear} lf{7}}:radio:lighter{1 2}·wn*4*.25·p*1/8·hader·locrian c. 9?·dorian d.. 3?

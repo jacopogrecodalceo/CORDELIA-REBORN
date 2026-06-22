@@ -10,7 +10,7 @@ talea 4 · d#4 1 3# 4
 mf<f in 4·cls hyd·rot 4
 
 @cordelia
-talea 3 2 1 2 3
+eu 3 8
 c4 fr dorian
 wn qn
 mf

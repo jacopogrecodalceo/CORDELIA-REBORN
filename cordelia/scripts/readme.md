@@ -1,0 +1,3 @@
+- eval json dyns 
+- check if in all qualities there's a match function
+- check if match function dont collide

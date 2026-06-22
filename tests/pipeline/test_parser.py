@@ -16,7 +16,7 @@ code_ancient_cordelia = Path(__file__).parent / "code_ancient_cordelia.txt"
 
 def test_func_inside_qualities():
    code = r"""
-@cordelia·talea {1 2 3}·dorian d <3 2>
+@cordelia·talea {1 2 3} 16 in 8
 """
 
    trees = parse_no_transformer(code)
@@ -72,9 +72,12 @@ def test_simple():
 
 def test_more_difficult():
    code = r"""
-@cordelia·talea {1 2 3}·dorian d
+@cordelia·talea {1 2 3}
+@cordelia·eu 3 8
 """
-   trees = parse(code)
-   console.print(f"\nTREES: {len(trees)}")
-   for t in trees:
-      console.print(t)
+   units = parse(code)
+   console.print(f"\nTREES: {len(units)}")
+   for u in units:
+      console.print(u)
+   assert isinstance(units[0], Instrument)
+   assert isinstance(units[1], Instrument)

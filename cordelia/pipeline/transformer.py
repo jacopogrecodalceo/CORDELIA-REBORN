@@ -1,51 +1,12 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Any
 from lark import Transformer, Token, Tree
-from cordelia.pipeline.deduction import Quality, deduce_quality
+from cordelia.pipeline.transformer_models import *
+from cordelia.pipeline.deduction import deduce_quality
 
 # ─── ERRORS ──────────────────────────────────────────────────────────────────
 
 class CordeliaDeductionError(Exception):
 	pass
-
-
-# ─── MODELS ──────────────────────────────────────────────────────────────────
-
-@dataclass
-class Func:
-	name: str
-	args: list[Any] = field(default_factory=list)
-
-
-@dataclass
-class Array:
-	items: list[Any] = field(default_factory=list)
-
-
-@dataclass
-class Mod:
-	kind: str        # "dot" | "colon"
-	name: str
-	array: Array | None = None
-
-@dataclass
-class Score:
-	qualities: list[Quality] = field(default_factory=list)
-
-
-@dataclass
-class Instrument:
-	name: str
-	qualities: dict[str, Quality] = field(default_factory=dict)
-	modifiers: list[Mod] = field(default_factory=list)
-
-
-@dataclass
-class Variable:
-	name: str
-	items: list[Any] = field(default_factory=list)
-
 
 # ─── TRANSFORMER ─────────────────────────────────────────────────────────────
 
@@ -105,7 +66,7 @@ class CordeliaTransformer(Transformer):
 	def statement(self, children):
 		name = children[0]
 		items = list(children[1:])
-		return Variable(name=name, items=items)
+		return Variable(name=name, value=items)
 
 	# ── phrase → Instrument ───────────────────────────────────────────────────
 
@@ -114,13 +75,11 @@ class CordeliaTransformer(Transformer):
 		modifiers = [c for c in children[1:] if isinstance(c, Mod)]
 		score = next((c for c in children[1:] if isinstance(c, Score)), Score())
 		print(name, modifiers, score)
-		qualities = {}
-		for q in score.qualities:
-			# a quality.items is a list[Any]
-			key, val = deduce_quality(q)
-			qualities[key] = val
-
-		return Instrument(name=name, qualities=qualities, modifiers=modifiers)
+		"""
+  		OK so you need a rule-based dispatcher where each quality function registers its own matching condition. 
+  		This is the classic chain of responsibility pattern.
+ 		"""
+		return Instrument(name=name, qualities=[deduce_quality(q) for q in score.qualities], modifiers=modifiers)
 
 	# ── unit ──────────────────────────────────────────────────────────────────
 

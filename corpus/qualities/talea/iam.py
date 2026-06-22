@@ -2,7 +2,11 @@ import re
 import nltk
 from cordelia.console import console
 
-nltk.download("cmudict", quiet=True)
+"""Check if cmudict is downloaded, download if needed."""
+""" try:
+	nltk.data.find('corpora/cmudict.zip')
+except LookupError:
+	nltk.download("cmudict", quiet=True) """
 from nltk.corpus import cmudict
 
 cmu = cmudict.dict()
@@ -64,6 +68,8 @@ def _fit_iambic(syllables: list[int | None], template: list[int] = IAMBIC) -> tu
 	score = matches / n if n > 0 else 0.0
 	return result, score
 
+def match(items: list) -> bool:
+   return False
 
 def iam(verse: str) -> tuple[list[int], float]:
 	words = re.findall(r"[a-zA-Z']+", verse)
