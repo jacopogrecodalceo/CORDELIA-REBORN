@@ -1,37 +1,65 @@
 # CORDELIA PIPELINE
 
-In the beginning there's the LEXER. Has one job, split input code into chunks
-`source → lexer.py → list[str] (raw chunks) → parser.py → list[Instrument | Variable]`
+# A BRAND NEW WRITING STYLE
+In ISOCORDELIA no commas, no uppercase exist.
+We prefer {} to (), but you can use both.
 
-   INPUT
-      ↓
-   PARSER
-   flat list of staff/score tokens
-         ↓
-   GROUPER
-   pair each staff with its following score
-   produces: [Group(staff='p', score='120'), Group(staff='cordelia', score='talea 3 1')]
-         ↓
-   CLASSIFIER
-   for each group: is staff an instrument or variable?
-   looks at JSONs
-   produces: [{type: "instrument", name: "cordelia", score: "talea 3 1"}, ...]
-         ↓
-   VALIDATOR
-   is the instrument registered?
-   does the score make sense?
-   raises clear errors early before anything executes
-         ↓
-   SCORE PARSER
-   lark layer 2 grammar parses the score string
-   produces structured score data
-         ↓
-   DISPATCHER
-   routes to the right function
-   taleae/eu.py, taleae/talea.py...
+# *CORDELIA*'s PIPELINE
+INPUT
+	↓
+LEXER → list[str]
+simply split into chunk the main code
+	- split at "@"
+	- ignore comments
+this chunks are **units**
+	↓
+PARSER → list[Instrument | Variable]
+each unit can either be a **phrase** or a **statement** — they both become staves and they are identified by the same 
+	unit
+		phrase
+			header  cordelia
+				modifier
+					dot_mod lpf
+				modifier
+					colon_mod
+						del
+						array
+				modifier
+					colon_mod       radio
+					score
+						quality
+							atom    talea
+							atom    4
+						quality
+							atom    d#4
+							atom    1
+							atom    3#
+							atom    4
+	↓
+TRANSFORMER
+Instrument(name='cordelia', qualities=[Talea(pattern=['3', '2'], cycle='8'), Colores(values=[1]), Dur(values=[1]), Dyn(values=[0.28183829312644537]), Env(values=['classic']), Space(values=[1])], modifiers=[], auto_fill=True)
+	↓
+POSTPROCESSOR
+- change to Staff class -> .dirty attr
+- name: validate name in json, check if already exists in session, create his unique id, send the instrument
+- score: process each quality (i.e. dur)
+- modifiers: create template
+	↓
+VALIDATOR
+is the instrument registered?
+does the score make sense?
+raises clear errors early before anything executes
+	↓
+SCORE PARSER
+lark layer 2 grammar parses the score string
+produces structured score data
+	↓
+DISPATCHER
+routes to the right function
+taleae/eu.py, taleae/talea.py...
 ---
 
-staff:
-- instrument
-- modifier
-- variable
+todo
+- comment syntax and in grammar, if instrument is commented—everything is off
+- add possibility of "and" operator to accumulate everything
+- set up the recording with pt.record and cs.chn — not inside Csound

@@ -1,11 +1,18 @@
 from loguru import logger
 from pathlib import Path
 
-src = Path(__file__).parent
-main_dir = src.parent
+core = Path(__file__).parent
+main_dir = core.parent
+
+csound = core / 'csound'
+include = csound / 'orc' / 'include.orc'
+
 corpus = main_dir / 'corpus'
 qualities = corpus / 'qualities' 
 json = corpus / '_json'
+
+templates = core / 'templates'
+
 
 score = main_dir / 'score'
 

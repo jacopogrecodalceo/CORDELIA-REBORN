@@ -4,7 +4,7 @@ from cordelia.pipeline.lexer import lex
 from cordelia.pipeline.transformer import CordeliaTransformer
 import cordelia.path
 
-GRAMMAR_PATH = cordelia.path.src / 'pipeline' / 'grammar.lark'
+GRAMMAR_PATH = cordelia.path.core / 'pipeline' / 'grammar.lark'
 logger.debug(GRAMMAR_PATH)
 
 _transformer = CordeliaTransformer()
@@ -20,3 +20,4 @@ def parse(source: str) -> list:
 def parse_no_transformer(source: str) -> list:
 	p = _build()
 	return [p.parse(chunk) for chunk in lex(source)]
+

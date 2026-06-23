@@ -13,8 +13,9 @@ DATE = datetime.today().strftime(f'{year}%m%d-%H%M')
 OUTPUT_SCORE_NAME = f'cor{DATE}'
 OUTPUT_SCORE_PATH = cordelia.path.score / OUTPUT_SCORE_NAME
 
+QUERY_UDP_WHILE_SLEEP_TIME = 1/8
 QUERY_CSOUND_WHILE_SLEEP_TIME = 1/12 #the sleep time in the main while loop
-
+SHORT_REST_AFTER_INIT = 1/4 #sec after csound init
 CSOUND_QUALITY_FTGEN_SIZE = 4096 #the size of the ft of qualities
 
 CSOUND_DEVICEs = {
@@ -22,7 +23,6 @@ CSOUND_DEVICEs = {
    'dac': {}
 }
 
-QUERY_UDP_SLEEP_TIME = 1/8
 
 REAPER_CLIENT = SimpleUDPClient(
    "127.0.0.1",

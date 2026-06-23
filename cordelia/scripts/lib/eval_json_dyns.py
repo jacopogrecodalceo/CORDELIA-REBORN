@@ -5,8 +5,6 @@ import json
 import cordelia.path
 from cordelia.helpers import db_to_amplitude
 
-
-
 # Or if you have the helper:
 # from cordelia.helpers import db_to_amplitude
 

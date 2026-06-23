@@ -19,6 +19,11 @@ class UDPRouter:
 
          print(f"OPEN {name} @ {port}")
 
+   def close_ports(self) -> None:
+      for sock in self.socket_map:
+         sock.close()
+      self.socket_map.clear()
+
    def receive_once(self, timeout: float = 0.0) -> list[tuple[str, str]]:
       readable, _, _ = select.select(
          list(self.socket_map),
@@ -51,16 +56,21 @@ from queue import Queue
 
 class UDPWorker:
    def __init__(self, router):
-      self.router = router
-      self.queue = Queue()
-      self.thread = threading.Thread(target=self._run, daemon=True)
+      self.router  = router
+      self.queue   = Queue()
+      self._stop   = threading.Event()
+      self.thread  = threading.Thread(target=self._run, daemon=True)
 
    def start(self):
       self.router.open_ports()
       self.thread.start()
 
+   def stop(self):
+      self._stop.set()
+      self.router.close_ports()
+
    def _run(self):
-      while True:
+      while not self._stop.is_set():
          for direction, msg in self.router.receive_once(0.1):
             self.queue.put_nowait((direction, msg))
 

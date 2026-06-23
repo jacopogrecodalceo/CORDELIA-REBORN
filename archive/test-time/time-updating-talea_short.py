@@ -185,7 +185,7 @@ class Staff:
 
 	def __init__(self, instrument, talea, colores, staff_dur, dur=None, dyn=None, env=None, space=None):
 		self.instrument = instrument
-		self._talea = talea  
+		self._talea = talea
 		self.colores = colores
 		self.staff_dur = staff_dur
 		self.instr_id = f'i{id(self)}'

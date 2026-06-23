@@ -17,7 +17,9 @@ flags = [
    '--format=24bit',
    f'--ksmps={KSMPS}',
    '--0dbfs=1',
-   
+
+   '-d', # HIDE ASCII TABLE
+ 
    '--m-amps=1',
    '--m-range=1',
    '--m-warnings=0',

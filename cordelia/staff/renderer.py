@@ -1,15 +1,13 @@
 # cordelia/renderer.py
 from __future__ import annotations
-from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 from cordelia.staff.model import Staff
 from cordelia.staff.const import QUALITIEs, FTGEN_SIZE
-
-TEMPLATES_DIR = Path(__file__).parent / 'templates' / 'staff'
+import cordelia.path
 
 _jinja_env = Environment(
-	loader=FileSystemLoader(TEMPLATES_DIR),
+	loader=FileSystemLoader(cordelia.path.templates),
 	trim_blocks=True,     # no stray newline after {% ... %}
 	lstrip_blocks=True,   # no leading whitespace before {% ... %}
 )
