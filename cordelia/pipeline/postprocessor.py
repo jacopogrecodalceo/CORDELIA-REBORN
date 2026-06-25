@@ -22,7 +22,6 @@ class Mod:
 	name: str
 	array: Array | None = None
 
-
 REPETITION_PAT = re.compile(r"([a-zA-Z0-9_]+)x(\d+)")
 
 @dataclass

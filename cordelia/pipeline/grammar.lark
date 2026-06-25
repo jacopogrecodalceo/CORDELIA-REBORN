@@ -1,8 +1,16 @@
 %import common.NEWLINE
-%ignore /[ \t\r]+/
+%import common.WS_INLINE
+
+%ignore /;[^\n]*/
+%ignore /;@[\s\S]*?$/
 
 _NL:    NEWLINE
 _DELIM: "·" | "|"
+_SEP: WS_INLINE
+
+// ─── HEADER ──────────────────────────────────────────────────────────────────
+
+header: "@" NAME
 
 // ─── ENTRY ───────────────────────────────────────────────────────────────────
 
@@ -10,38 +18,38 @@ unit: phrase | statement
 
 // ─── STATEMENT ───────────────────────────────────────────────────────────────
 
-statement: header item+
+statement: header _SEP atom+ (_SEP atom+)*
 
 // ─── PHRASE ──────────────────────────────────────────────────────────────────
 
-phrase:  header modifier* (_NL modifier+)* score
-score:   (_DELIM | _NL) quality ((_DELIM | _NL) quality)*
-quality: item+
-
-// ─── HEADER ──────────────────────────────────────────────────────────────────
-
-header: "@" NAME
+phrase:  header modifier* _SEP* score
+score: ((_DELIM | _NL) quality)+
+quality: _SEP* atom+ (_SEP atom+)*
 
 // ─── MODIFIERS ───────────────────────────────────────────────────────────────
 
-modifier: dot_mod | colon_mod
+modifier: _NL* (dot_mod | colon_mod)
 
 dot_mod:   "." NAME array?
 colon_mod: ":" NAME array?
 
-// ─── ARRAY ───────────────────────────────────────────────────────────────────
+// ─── ARRAYS ──────────────────────────────────────────────────────────────────
 
-array: "(" item* ")"
-		| "{" item* "}"
+array: "(" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* ")"
+     | "{" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* "}"
 
-// ─── ITEM ────────────────────────────────────────────────────────────────────
+// ─── ATOM ────────────────────────────────────────────────────────────────────
 
-item: FUNC array   -> func
-    | VALUE        -> atom
-    | array        -> atom
+?atom: atom "+" atom
+    | atom "+" atom
+    | NAME array -> func
+    | array
+    | NAME
+    | NUMBER
+    | SYM
 
 // ─── TOKENS ──────────────────────────────────────────────────────────────────
 
-NAME:  /[a-zA-Z_][a-zA-Z0-9_]*/
-FUNC:  /[a-zA-Z_][a-zA-Z0-9_]*(?=[\(\{])/
-VALUE: /[^\s·|@.:{}\(\)\n][^\s·|@:{}\(\)\n]*/
+NAME.3:   /[a-zA-Z_][a-zA-Z0-9_]*/
+NUMBER.2: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
+SYM.1: /[^\s·|@:{}\(\){}\na-zA-Z+\n]+/

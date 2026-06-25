@@ -1,5 +1,6 @@
 # CORDELIA REBORN
 _a method, a tender organic affection_
+
 _a new horizon_
 
 ### FEATURING A BRAND NEW WRITING STYLE
@@ -46,94 +47,5 @@ why do we need uppercase? why do we need commas?
 - set up the recording with pt.record and cs.chn — not inside Csound
 - taleae and colores under the hood library?
 
-## *CORDELIA*'s PIPELINE
-
-INPUT
-	↓
-LEXER → list[str]
-simply split into chunk the main code
-	- split at "@"
-	- ignore comments
-this chunks are **units**
-	↓
-PARSER → list[Instrument | Variable]
-Parser divide code into 4 levels:
-1. each unit can either be a **phrase** or a **statement** — they both become staves and they are identified by the same caracther "@".
----
-	2. header | modifier | score (| atom — if it's a statement) this is the main structure of *cordelia*
-		- *header* is simply the *variable* or the *instrument name* — this will also be the name of the main Python classes they will be converted in
-		- *modifiers* are all the sound modifiers at the end of the chain, they can be parallel (if starts with ":") or in sequence (if "."):
-			e.g.
-			```
-			.fl:del:lpf.del::am
-
-			is
-
-						→ :del			→ out
-				.fl 
-						→ :lpf.del		→ out
-
-								→ ::am	→ out
-			```
-		- *score* detain *qualities* (they are simply parameters):
-			- rhythm: talea
-			- pitches: colores
-			- dur
-			- dyn
-			- env
-			- space
-			+ info → thinking on adding a dummy quality i can send information to cordelia — i.e. if the chunk is revalidate even if do not change (i.e. `·stubborn` or `mulo`). this can also be funny to add and change qualities..
----
-		3. 
-
-e.g.
-```
-	unit
-		phrase
-			header  cordelia
-			modifier
-				dot_mod lpf
-			modifier
-				colon_mod
-					del
-					array
-			modifier
-				colon_mod       radio
-			score
-				quality
-					atom    talea
-					atom    4
-				quality
-					atom    d#4
-					atom    1
-					atom    3#
-					atom    4
-
-	unit
-		statement
-			header  var
-			atom    123
-```
-	↓
-TRANSFORMER
-Instrument(name='cordelia', qualities=[Talea(pattern=['3', '2'], cycle='8'), Colores(values=[1]), Dur(values=[1]), Dyn(values=[0.28183829312644537]), Env(values=['classic']), Space(values=[1])], modifiers=[], auto_fill=True)
-	↓
-POSTPROCESSOR
-- change to Staff class -> .dirty attr
-- name: validate name in json, check if already exists in session, create his unique id, send the instrument
-- score: process each quality (i.e. dur)
-- modifiers: create template
-	↓
-VALIDATOR
-is the instrument registered?
-does the score make sense?
-raises clear errors early before anything executes
-	↓
-SCORE PARSER
-lark layer 2 grammar parses the score string
-produces structured score data
-	↓
-DISPATCHER
-routes to the right function
-taleae/eu.py, taleae/talea.py...
-
+## *CORDELIA*'s INSTR IDEAs
+- *sweet ki*, a nice soft kick

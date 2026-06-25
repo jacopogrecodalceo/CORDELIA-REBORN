@@ -1,4 +1,4 @@
-from lark import Lark
+from lark import Lark, lexer
 from loguru import logger
 from cordelia.pipeline.lexer import lex
 from cordelia.pipeline.transformer import CordeliaTransformer
@@ -9,15 +9,14 @@ logger.debug(GRAMMAR_PATH)
 
 _transformer = CordeliaTransformer()
 
-def _build(transformer=None):
-	grammar = GRAMMAR_PATH.read_text()
-	return Lark(grammar, start="unit", parser="lalr", transformer=transformer)
+def _build():
+   grammar = GRAMMAR_PATH.read_text()
+   return Lark(grammar, start="unit", parser="earley", lexer="dynamic", ambiguity="resolve")
 
 def parse(source: str) -> list:
-	p = _build(transformer=_transformer)
-	return [p.parse(chunk) for chunk in lex(source)]
+   p = _build()
+   return [_transformer.transform(p.parse(chunk)) for chunk in lex(source)]
 
-def parse_no_transformer(source: str) -> list:
-	p = _build()
-	return [p.parse(chunk) for chunk in lex(source)]
-
+def parse_raw(source: str) -> list:
+   p = _build()
+   return [p.parse(chunk) for chunk in lex(source)]

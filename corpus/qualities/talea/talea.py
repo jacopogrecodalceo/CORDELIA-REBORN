@@ -24,7 +24,7 @@ def talea(items: list) -> Talea:
 	# Extract and normalize pulse pattern
 	pulses = args[0]
 	pulse_values = pulses.items if isinstance(pulses, Array) else [pulses]
-	
+
 	# Default values
 	duration = 8  # Default duration in beats
 	pad_length = None

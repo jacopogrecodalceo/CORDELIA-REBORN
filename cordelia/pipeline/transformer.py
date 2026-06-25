@@ -1,24 +1,63 @@
 from __future__ import annotations
+from dataclasses import dataclass, field
+from typing import Any
 from lark import Transformer, Token, Tree
-from cordelia.pipeline.transformer_models import *
-from cordelia.pipeline.deduction import deduce_quality
 
-# ─── ERRORS ──────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------- #
+#                                    MODELs                                    #
+# ---------------------------------------------------------------------------- #
+
+@dataclass
+class Instrument:
+	name: str
+	score: list[Quality] = field(default_factory=list)
+	modifiers: list[Modifier] = field(default_factory=list)
+
+@dataclass
+class Variable:
+	name: str
+	value: list[Any] = field(default_factory=list)
+
+# ---------------------------------------------------------------------------- #
+
+@dataclass
+class Modifier:
+	kind: str        # "dot" | "colon"
+	name: str
+	array: Array | None = None
+
+@dataclass
+class Score:
+   items: list[Quality] = field(default_factory=list)
+
+# ---------------------------------------------------------------------------- #
+
+@dataclass
+class Quality:
+   items: list[Any] = field(default_factory=list)
+
+@dataclass
+class Func:
+	name: str
+	args: list[Any] = field(default_factory=list)
+
+@dataclass
+class Array:
+	items: list[Any] = field(default_factory=list)
+
+# ---------------------------------------------------------------------------- #
+#                                    ERRORs                                    #
+# ---------------------------------------------------------------------------- #
 
 class CordeliaDeductionError(Exception):
 	pass
 
-# ─── TRANSFORMER ─────────────────────────────────────────────────────────────
-
+# ---------------------------------------------------------------------------- #
+#                                  TRANSFORMER                                 #
+# ---------------------------------------------------------------------------- #
 class CordeliaTransformer(Transformer):
 
 	# ── atoms / funcs ─────────────────────────────────────────────────────────
-
-	def atom(self, children):
-		c = children[0]
-		if isinstance(c, Array):
-			return c
-		return str(c)
 
 	def func(self, children):
 		name = str(children[0])
@@ -39,7 +78,7 @@ class CordeliaTransformer(Transformer):
 		return Quality(items=list(children))
 
 	def score(self, children):
-		return Score(qualities=list(children))
+		return Score(items=list(children))
 
 	# ── header ────────────────────────────────────────────────────────────────
 
@@ -51,12 +90,12 @@ class CordeliaTransformer(Transformer):
 	def dot_mod(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else None
-		return Mod(kind="dot", name=name, array=arr)
+		return Modifier(kind="sequence", name=name, array=arr)
 
 	def colon_mod(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else None
-		return Mod(kind="colon", name=name, array=arr)
+		return Modifier(kind="parallel", name=name, array=arr)
 
 	def modifier(self, children):
 		return children[0]
@@ -72,14 +111,21 @@ class CordeliaTransformer(Transformer):
 
 	def phrase(self, children):
 		name = children[0]
-		modifiers = [c for c in children[1:] if isinstance(c, Mod)]
-		score = next((c for c in children[1:] if isinstance(c, Score)), Score())
-		print(name, modifiers, score)
-		"""
-  		OK so you need a rule-based dispatcher where each quality function registers its own matching condition. 
-  		This is the classic chain of responsibility pattern.
- 		"""
-		return Instrument(name=name, qualities=[deduce_quality(q) for q in score.qualities], modifiers=modifiers)
+		rest = children[1:]
+		modifiers = []
+		score = None
+		for c in rest:
+			if isinstance(c, Modifier):
+					modifiers.append(c)
+			elif isinstance(c, Score):
+					if score is not None:
+						raise CordeliaDeductionError(f"duplicate score in phrase '{name}'")
+					score = c
+			else:
+					raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
+		if score is None:
+			raise CordeliaDeductionError(f"phrase '{name}' has no score")
+		return Instrument(name=name, score=score.items, modifiers=modifiers)
 
 	# ── unit ──────────────────────────────────────────────────────────────────
 

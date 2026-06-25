@@ -14,7 +14,6 @@ plugin's match() until one returns True.
          ↓
    corpus/qualities/talea/eu.py
    corpus/qualities/colores/mode.py
-   ...
 """
 
 from __future__ import annotations
@@ -26,9 +25,6 @@ from cordelia.pipeline.quality_models import *
 
 # ─── MODELS ──────────────────────────────────────────────────────────────────
 
-@dataclass
-class Quality:
-   items: list[Any] = field(default_factory=list)
 
 
 # ─── ERRORS ──────────────────────────────────────────────────────────────────

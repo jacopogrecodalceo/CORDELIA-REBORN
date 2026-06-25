@@ -3,4 +3,12 @@
 
 @cordelia·talea {3 2} 8 in 8
 
+;@new_line
+.lpf{12}
+:lpf2
+:radio
+talea 3·dorian d
+
+@end ad
+
 

@@ -14,7 +14,7 @@ from corpus.qualities.dyn import *
 import cordelia.const
 
 data = cordelia.const.data.dyns
-print(data)
+
 def match(items: list) -> bool:
 	if items[0] in data:
 		return True

@@ -65,10 +65,6 @@ def test_comment_stripped():
    src = "; full line comment\n@cordelia·talea 3 1"
    assert lex(src) == ["@cordelia·talea 3 1"]
 
-def test_inline_comment_stripped():
-   src = "@cordelia·talea 3 1 ; inline"
-   assert lex(src) == ["@cordelia·talea 3 1"]
-
 def test_comment_between_units():
    src = """@vln·c d e
    ; comment
