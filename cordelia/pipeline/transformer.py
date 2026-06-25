@@ -1,49 +1,5 @@
-from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Any
-from lark import Transformer, Token, Tree
-
-# ---------------------------------------------------------------------------- #
-#                                    MODELs                                    #
-# ---------------------------------------------------------------------------- #
-
-@dataclass
-class Instrument:
-	name: str
-	score: list[Quality] = field(default_factory=list)
-	modifiers: list[Modifier] = field(default_factory=list)
-
-@dataclass
-class Variable:
-	name: str
-	value: list[Any] = field(default_factory=list)
-
-# ---------------------------------------------------------------------------- #
-
-@dataclass
-class Modifier:
-	kind: str        # "dot" | "colon"
-	name: str
-	array: Array | None = None
-
-@dataclass
-class Score:
-   items: list[Quality] = field(default_factory=list)
-
-# ---------------------------------------------------------------------------- #
-
-@dataclass
-class Quality:
-   items: list[Any] = field(default_factory=list)
-
-@dataclass
-class Func:
-	name: str
-	args: list[Any] = field(default_factory=list)
-
-@dataclass
-class Array:
-	items: list[Any] = field(default_factory=list)
+from cordelia.pipeline.visitor import visit_list
+from cordelia.models.transformers import *
 
 # ---------------------------------------------------------------------------- #
 #                                    ERRORs                                    #
@@ -58,16 +14,27 @@ class CordeliaDeductionError(Exception):
 class CordeliaTransformer(Transformer):
 
 	# ── atoms / funcs ─────────────────────────────────────────────────────────
+	""" def atom(self, children):
+		c = children[0]
+		if isinstance(c, Array):
+			return c
+		if c.startswith('x'):
+			print('-'*32)
+			print(c)
+			print('-'*32)
+		return str(c) """
 
 	def func(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else Array()
-		return Func(name=name, args=arr.items)
+		items = visit_list(arr.items)
+		return Func(name=name, args=items)
 
 	# ── arrays ────────────────────────────────────────────────────────────────
 
 	def array(self, children):
-		return Array(items=list(children))
+		items = visit_list(list(children))
+		return Array(items=items)
 
 	paren_array = array
 	brace_array = array
@@ -75,27 +42,33 @@ class CordeliaTransformer(Transformer):
 	# ── quality / score ───────────────────────────────────────────────────────
 
 	def quality(self, children):
-		return Quality(items=list(children))
+		items = visit_list(list(children))
+		return Quality(items=items)
 
 	def score(self, children):
 		return Score(items=list(children))
 
 	# ── header ────────────────────────────────────────────────────────────────
 
+	def id(self, children):
+		return children[0]
+
 	def header(self, children):
-		return str(children[0])
+		if len(children) > 1:
+			return str(children[0]), children[1]
+		return str(children[0]), 1
 
 	# ── modifiers ─────────────────────────────────────────────────────────────
 
 	def dot_mod(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else None
-		return Modifier(kind="sequence", name=name, array=arr)
+		return Modifier(kind="sequence", name=name, args=arr)
 
 	def colon_mod(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else None
-		return Modifier(kind="parallel", name=name, array=arr)
+		return Modifier(kind="parallel", name=name, args=arr)
 
 	def modifier(self, children):
 		return children[0]
@@ -105,12 +78,13 @@ class CordeliaTransformer(Transformer):
 	def statement(self, children):
 		name = children[0]
 		items = list(children[1:])
-		return Variable(name=name, value=items)
+		visit_listed_items = visit_list(items)
+		return Variable(name=name, value=visit_listed_items)
 
 	# ── phrase → Instrument ───────────────────────────────────────────────────
 
 	def phrase(self, children):
-		name = children[0]
+		name, instr_id = children[0]
 		rest = children[1:]
 		modifiers = []
 		score = None
@@ -125,9 +99,4 @@ class CordeliaTransformer(Transformer):
 					raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
 		if score is None:
 			raise CordeliaDeductionError(f"phrase '{name}' has no score")
-		return Instrument(name=name, score=score.items, modifiers=modifiers)
-
-	# ── unit ──────────────────────────────────────────────────────────────────
-
-	def unit(self, children):
-		return children[0]
+		return Instrument(name=name, score=score.items, modifiers=modifiers, id=instr_id)

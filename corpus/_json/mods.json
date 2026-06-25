@@ -1,7 +1,7 @@
 {
-   "dpf": {
-      "input": "Skk",
-      "default": ["instr_null", 500, 0.5],
-      "description": "lowpass diode filter"
-   }
+   "wow": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/mod/wow.orc",
+   "am": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/mod/am.orc",
+   "radio": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/mod/radio.orc",
+   "wooden": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/mod/wooden.orc",
+   "wow2": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/mod/wow2.orc"
 }

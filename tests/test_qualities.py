@@ -11,8 +11,8 @@ def test_mode1():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
 
 def test_mode2():
    code = r"""
@@ -21,8 +21,8 @@ def test_mode2():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
 
 def test_dur1():
    code = r"""
@@ -31,8 +31,8 @@ def test_dur1():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
 
 def test_dur1():
    code = r"""
@@ -41,8 +41,8 @@ def test_dur1():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
 
 def test_env1():
    code = r"""
@@ -51,9 +51,9 @@ def test_env1():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
-   assert isinstance(units[0].qualities[3], Env)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
+   assert isinstance(units[0].score[3], Env)
 
 def test_env2():
    code = r"""
@@ -62,9 +62,9 @@ def test_env2():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
-   assert isinstance(units[0].qualities[3], Env)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
+   assert isinstance(units[0].score[3], Env)
 
 def test_dyn1():
    code = r"""
@@ -73,10 +73,10 @@ def test_dyn1():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
-   assert isinstance(units[0].qualities[3], Env)
-   assert isinstance(units[0].qualities[4], Dyn)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
+   assert isinstance(units[0].score[3], Env)
+   assert isinstance(units[0].score[4], Dyn)
 
 def test_dyn2():
    code = r"""
@@ -85,9 +85,9 @@ def test_dyn2():
    units = parse(code)
    for u in units:
       console.print(u)
-   assert isinstance(units[0].qualities[0], Colores)
-   assert isinstance(units[0].qualities[1], Talea)
-   assert isinstance(units[0].qualities[3], Env)
-   assert isinstance(units[0].qualities[4], Dyn)
+   assert isinstance(units[0].score[0], Colores)
+   assert isinstance(units[0].score[1], Talea)
+   assert isinstance(units[0].score[3], Env)
+   assert isinstance(units[0].score[4], Dyn)
 
 

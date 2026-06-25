@@ -22,7 +22,6 @@ class Mod:
 	name: str
 	array: Array | None = None
 
-REPETITION_PAT = re.compile(r"([a-zA-Z0-9_]+)x(\d+)")
 
 @dataclass
 class Score:
@@ -33,30 +32,6 @@ class Score:
          quality.items = self._expand(quality.items)
 
    @classmethod
-   def _expand(cls, items):
-      expanded = []
-
-      for item in items:
-
-         if isinstance(item, Array):
-            expanded.append(
-               Array(cls._expand(item.items))
-            )
-
-         elif isinstance(item, str):
-            match = REPETITION_PAT.fullmatch(item)
-
-            if match:
-               value = match.group(1)
-               times = int(match.group(2))
-               expanded.extend([value] * times)
-            else:
-               expanded.append(item)
-
-         else:
-            expanded.append(item)
-
-      return expanded
 
 
 QUALITY_CLASSEs = [Talea, Colores, Dur, Dyn, Env, Space]

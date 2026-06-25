@@ -23,8 +23,7 @@ def test_simple_raw():
 	for t in trees:
 		console.print(t)
 	assert len(trees) == 1
-	assert trees[0].data == 'unit'
-	assert trees[0].children[0].data == 'phrase'
+	assert trees[0].data == 'phrase'
 
 def test_simple():
 	code = r"""
@@ -129,7 +128,7 @@ def test_func():
 	array = instrument.score[0].items[1]
 	console.print('='*128)
 	console.print(array)
-	assert array.items[4].name == 'osc'
+	assert array.items[5].name == 'osc'
 
 def test_ancient_cordelia1():
 	"""

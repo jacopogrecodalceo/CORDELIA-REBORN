@@ -24,8 +24,8 @@ def test_specific1():
    
    print("-"*128)
    unit = trees[0]
-   assert unit.children[0].data == 'phrase'
-   phrase = unit.children[0]
+   assert unit.data == 'phrase'
+   phrase = unit
    assert phrase.children[0].data == 'header'
    assert phrase.children[1].data == 'modifier'
    assert phrase.children[4].data == 'score'
@@ -53,8 +53,8 @@ dorian {1 3 9}
    
    print("-"*128)
    unit = trees[0]
-   assert unit.children[0].data == 'phrase'
-   phrase = unit.children[0]
+   assert unit.data == 'phrase'
+   phrase = unit
    assert phrase.children[0].data == 'header'
    assert phrase.children[1].data == 'modifier'
    assert phrase.children[4].data == 'score'
@@ -74,8 +74,8 @@ def test_specific3():
    
    print("-"*128)
    unit = trees[0]
-   assert unit.children[0].data == 'phrase'
-   phrase = unit.children[0]
+   assert unit.data == 'phrase'
+   phrase = unit
    assert phrase.children[0].data == 'header'
    assert phrase.children[1].data == 'modifier'
    assert phrase.children[4].data == 'score'

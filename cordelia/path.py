@@ -8,13 +8,10 @@ csound = core / 'csound'
 include = csound / 'orc' / 'include.orc'
 
 corpus = main_dir / 'corpus'
-qualities = corpus / 'qualities' 
+score = corpus / 'score' 
 json = corpus / '_json'
 
 templates = core / 'templates'
-
-
-score = main_dir / 'score'
 
 config = main_dir / 'config'
 adc_dev_list = config / 'adc'

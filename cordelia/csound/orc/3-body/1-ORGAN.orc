@@ -20,8 +20,8 @@ gkdiv		init 64 ;max division of main tempo for heart and lungs
 ;	HEART
 ;	tempo for heart
 gkpulse 	init 120
-gkbeatf		init i(gkpulse) / 60
-gkbeats		init 1 / (i(gkpulse) / 60)
+gkBEATf		init i(gkpulse) / 60
+gkBEATs		init 1 / (i(gkpulse) / 60)
 
 	instr heart
 
@@ -29,9 +29,9 @@ if gkpulse <= 0 then
 	gkpulse = gizero
 endif
 
-gkbeatf		= gkpulse / 60				;frequency for a quarter note in Hz
-gkbeats		= 1 / (gkpulse / 60)		;time of a quarter note in sec
-gkbeatms	= gkbeats*1000
+gkBEATf		= gkpulse / 60				;frequency for a quarter note in Hz
+gkBEATs		= 1 / (gkpulse / 60)		;time of a quarter note in sec
+gkBEATms	= gkBEATs*1000
 
 kph		init 0
 kph		phasor (gkpulse / gkdiv) / 60
@@ -39,20 +39,20 @@ kph		phasor (gkpulse / gkdiv) / 60
 aph		init 0
 aph		phasor (gkpulse / gkdiv) / 60
 
-gkbeatn		init 0				;number of beats from the beginning of session
+gkBEATn		init 0				;number of beats from the beginning of session
 klast_n		init -1
 
 if (((kph*gkdiv)%1) < klast_n) then
-	gkbeatn += 1
+	gkBEATn += 1
 endif
 
 klast_n	= ((kph*gkdiv)%1)
 
-gkbeatc	init 0				;number of beats from the beginning of session
+gkBEATc	init 0				;number of beats from the beginning of session
 klast_c	init -1
 
 if kph < klast_c then
-	gkbeatc += 1
+	gkBEATc += 1
 endif
 
 klast_c	= kph
@@ -115,9 +115,9 @@ klast	= kph
 
 	instr heartbeat_print
 gipulse = i(gkpulse)
-gibeats = i(gkbeats)
-gibeatms = i(gkbeatms)
-gibeatf = i(gkbeatf)
+gibeats = i(gkBEATs)
+gibeatms = i(gkBEATms)
+gibeatf = i(gkBEATf)
 itun = i(gktuning)
 prints("\n────────── heartbeat signal ──────────\n")
 prints("   ☀️ BPM : %.02f\n", gipulse)
