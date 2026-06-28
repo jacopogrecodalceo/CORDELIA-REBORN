@@ -14,15 +14,17 @@ from corpus.score.dyn import *
 import cordelia.const
 
 def match(items: list) -> bool:
-	if items[0] in cordelia.const.data.dyns:
+	if items[0] in cordelia.const.data['dyn']:
 		return True
 	return False
 
-def main(items: list) -> Dyn:
+def main(quality: Quality, instrument: Instrument) -> Dyn:
+	items = quality.items
 	validate(items)
-	return Dyn(items)
+	instrument.score['dyn'] = items
 
 def validate(items: list) -> bool:
 	for i in set(items):
-		if i not in cordelia.const.data.dyns:
-			raise ValueError(f"{i} does not belong to fts!!")
+		if i not in cordelia.const.data['dyn']:
+			raise ValueError(f"{i} does not belong to dyns!!")
+

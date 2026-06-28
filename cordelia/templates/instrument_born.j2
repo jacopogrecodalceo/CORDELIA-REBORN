@@ -1,0 +1,57 @@
+; ── INSTRUMENT {{ instrument.uid }} BIRTH ────────────────────────────
+gk{{ instrument.uid }}_cycle init {{ instrument.cycle }}
+
+{% for quality, values in instrument.score.items() if quality != 'character' %}
+gi{{ instrument.uid }}_{{ quality }} ftgen {{ instrument.ft_num[quality] }}, 0, {{ FTGEN_SIZE }}, -2, {{ values | length }}, {{ values | join(', ') }}
+{% endfor %}
+
+{% for quality in instrument.score if quality not in ['talea', 'character'] %}
+gk{{ instrument.uid }}_{{ quality }}_count init -1
+{% endfor %}
+
+	instr {{ instrument.uid }}
+ktalea_last init -1
+kinit_flag  init 1
+
+kmain   chnget "heart"
+kphase  = (kmain * gk{{ instrument.uid }}_cycle) % 1
+
+ktalea_len  table 0, gi{{ instrument.uid }}_talea
+ktalea_idx = floor(kphase * ktalea_len) + 1
+ktalea  table ktalea_idx, gi{{ instrument.uid }}_talea
+
+if ktalea > 0 && ktalea != ktalea_last then
+	if kinit_flag == 1 then
+		{% for quality in instrument.score if quality not in ['talea', 'character'] %}
+		gk{{ instrument.uid }}_{{ quality }}_count = ktalea - 1
+		{% endfor %}
+		kinit_flag = 0
+	endif
+
+	{% for quality in instrument.score if quality not in ['talea', 'character'] %}
+	; ··· {{ quality }}
+	k{{ quality }}_len  table 0, gi{{ instrument.uid }}_{{ quality }}
+	k{{ quality }}_idx  = (gk{{ instrument.uid }}_{{ quality }}_count % k{{ quality }}_len) + 1
+	k{{ quality }}      table k{{ quality }}_idx, gi{{ instrument.uid }}_{{ quality }}
+	{% endfor %}
+
+	; ── schedule events ──────────────────────────────────────
+	if kspace == 0 then
+		kch = 1
+		until kch > nchnls do
+			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * gk{{ instrument.uid }}_cycle / gkdiv, kdyn, kenv, kcolores, kch
+			kch += 1
+		od
+	else
+		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * gk{{ instrument.uid }}_cycle / gkdiv, kdyn, kenv, kcolores, kspace
+	endif
+
+	{% for quality in instrument.score if quality not in ['talea', 'character'] %}
+	gk{{ instrument.uid }}_{{ quality }}_count += 1
+	{% endfor %}
+	ktalea_last = ktalea
+endif
+	endin
+
+
+schedule "{{ instrument.uid }}", ksmps/sr, -1

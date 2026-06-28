@@ -14,7 +14,7 @@ def test_simple1():
 	console.print(units)
 	assert len(units) == 1
 	assert units[0].name == 'aaron'
-	assert len(units[0].score[0].items) == 13
+	assert len(units[0].qualities[0].items) == 13
 
 def test_simple2():
 	code = r"""
@@ -24,7 +24,7 @@ def test_simple2():
 	units = parse(code)
 	console.print(units)
 	assert len(units) == 2
-	assert len(units[0].score[1].items) == 5
+	assert len(units[0].qualities[1].items) == 5
 
 
 def test_simple3():
@@ -35,7 +35,7 @@ def test_simple3():
 	units = parse(code)
 	console.print(units)
 	assert len(units) == 2
-	assert len(units[0].score[1].items) == 5
+	assert len(units[0].qualities[1].items) == 5
 
 def test_simple4():
 	code = r"""
@@ -45,5 +45,5 @@ def test_simple4():
 	units = parse(code)
 	console.print(units)
 	assert len(units) == 2
-	assert len(units[0].score[1].items) == 5
+	assert len(units[0].qualities[1].items) == 5
 

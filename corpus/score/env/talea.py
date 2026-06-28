@@ -14,15 +14,17 @@ from corpus.score.env import *
 import cordelia.const
 
 def match(items: list) -> bool:
-	if items[0] in cordelia.const.data.fts:
+	if items[0] in cordelia.const.data['ft']:
 		return True
 	return False
 
-def main(items: list) -> Env:
+def main(quality: Quality, instrument: Instrument):
+	items = quality.items
+
 	validate(items)
-	return Env(values=items)
+	instrument.score['env'] = items
 
 def validate(items: list) -> bool:
 	for i in set(items):
-		if i not in cordelia.const.data.fts:
+		if i not in cordelia.const.data['ft']:
 			raise ValueError(f"{i} does not belong to fts!!")

@@ -1,30 +1,48 @@
 from dataclasses import dataclass, field
 
 @dataclass
-class Talea:
-   values: list[int]
-   cycle: int
+class Quality:
+    _values: list[int] = field(default_factory=list, init=False)
+    dirty: bool = False  # Move dirty after _values
+    
+    @property
+    def values(self) -> list[int]:
+        return self._values
+    
+    @values.setter
+    def values(self, new_values: list[int]):
+        if self._values != new_values:
+            self._values = new_values
+            self.dirty = True
 
 @dataclass
-class Colores:
-   values: list[float] = field(default_factory=lambda: [1])
+class Cycle(Quality):
+   pass
 
 @dataclass
-class Dur:
-   values: list[float] = field(default_factory=lambda: [1])
+class Talea(Quality):
+   pass
 
 @dataclass
-class Dyn:
-   values: list[str | float] = field(default_factory=lambda: ['mf'])
-   
-@dataclass
-class Env:
-   values: list[str] = field(default_factory=lambda: ['classic'])
+class Colores(Quality):
+   pass
 
 @dataclass
-class Space:
-   values: list[float] = field(default_factory=lambda: [1])
+class Dur(Quality):
+   pass
 
 @dataclass
-class Character:
-   values: list[float] = field(default_factory=lambda: [1])
+class Dyn(Quality):
+   pass
+
+@dataclass
+class Env(Quality):
+   pass
+
+@dataclass
+class Space(Quality):
+   pass
+
+@dataclass
+class Character(Quality):
+   pass

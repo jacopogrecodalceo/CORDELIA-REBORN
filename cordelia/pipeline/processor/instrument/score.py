@@ -4,50 +4,8 @@ from typing import Any
 from loguru import logger
 
 import cordelia.path
-from cordelia.models.transformers import Quality
+from cordelia.models.transformers import Quality, Instrument
 from cordelia.models.score import *
-
-""" 
-def get(category: str, name: str):
-   return _registry.get(category, {}).get(name)
-
-def call(category: str, name: str, *args, **kwargs):
-   module = get(category, name)
-   if not module:
-      raise ValueError(f"plugin not found: {category}/{name}")
-   func = getattr(module, name, None)
-   if not func:
-      raise ValueError(f"no function '{name}' in {category}/{name}.py")
-   return func(*args, **kwargs)
-
-
-def deduce_quality(quality: Quality):
-   for fn in _registry:
-      result = fn(quality)
-      if result is not None:
-         return result
-   raise CordeliaDeductionError(
-      f"Cannot deduce quality from {quality.items!r}"
-   )
-
- """
-"""
-deduction.py — quality deduction registry
-==========================================
-
-ROLE IN THE PIPELINE
---------------------
-receives a Quality (list of raw items from the transformer)
-and dispatches to the right plugin function by calling each
-plugin's match() until one returns True.
-
-   transformer.py
-         ↓
-   deduction.py    ← you are here
-         ↓
-   corpus/qualities/talea/eu.py
-   corpus/qualities/colores/mode.py
-"""
 
 
 class CordeliaDeductionError(Exception):
@@ -84,25 +42,26 @@ def load():
       _registry[category][name] = module
 
       register(category, name, module)
-      logger.debug(f"qualities | loaded {category}/{name}")
+      logger.debug(f"SCORE | loaded {category}/{name}")
 
-   logger.debug(f"qualities | registry: {list(_registry.keys())}")
+   for k, v in _registry.items():
+      logger.debug(f"SCORE | registry: {k}: {list(v.keys())}")
 
 
 
 # ─── DEDUCTION ───────────────────────────────────────────────────────────────
 
-def deduce_quality(quality: Quality) -> Talea | Colores | Dur | Dyn | Env | Space | Character:
+def deduce_quality(quality: Quality, instrument: Instrument):
    for category, plugins in _registry.items():
       for name, module in plugins.items():
+         logger.debug(f"deducing {quality.items} for category {category}, file {name}")
          if module.match(quality.items):
-            print(name, module)
             fn = getattr(module, 'main', None)
             if fn is None:
                raise CordeliaDeductionError(
                   f"plugin {category}/{name} has no function '{name}'"
                )
-            return fn(quality.items)
+            return fn(quality, instrument)
 
    raise CordeliaDeductionError(
       f"no plugin matched quality: {quality.items}"

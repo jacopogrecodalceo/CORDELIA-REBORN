@@ -48,8 +48,8 @@ def test_check_quality():
 	assert len(units) == 1
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
 
 def test_check_repeat1():
 	code = r"""
@@ -62,8 +62,8 @@ def test_check_repeat1():
 	assert len(units) == 1
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
 
 def test_check_repeat2():
 	code = r"""
@@ -76,8 +76,8 @@ def test_check_repeat2():
 	assert len(units) == 1
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
 
 def test_various_space():
 	code = r"""
@@ -90,8 +90,8 @@ def test_various_space():
 	assert len(units) == 1
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
 
 def test_multiline():
 	code = r"""
@@ -106,8 +106,8 @@ def test_multiline():
 	assert len(units) == 2
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
 
 def test_func():
 	code = r"""
@@ -122,10 +122,10 @@ def test_func():
 	assert len(units) == 2
 	assert isinstance(units[0], Instrument)
 	instrument = units[0]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'talea'
-	assert isinstance(instrument.score[0].items[1], Array)
-	array = instrument.score[0].items[1]
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'talea'
+	assert isinstance(instrument.qualities[0].items[1], Array)
+	array = instrument.qualities[0].items[1]
 	console.print('='*128)
 	console.print(array)
 	assert array.items[5].name == 'osc'
@@ -159,5 +159,35 @@ eu: 4, 16, 8
 	assert isinstance(units[0], Variable)
 	assert isinstance(units[2], Instrument)
 	instrument = units[2]
-	assert isinstance(instrument.score[0], Quality)
-	assert instrument.score[0].items[0] == 'eu'
+	assert isinstance(instrument.qualities[0], Quality)
+	assert instrument.qualities[0].items[0] == 'eu'
+
+def test_from_cordelia():
+	"""
+
+gktuning = scala.edolin12
+
+eu: 4, 16, 8
+	@careless@synthi.flanij(oscili:k(1/6, 1/32, lear), lfh(16));.shij(qn)
+	wn*4
+	p
+	hader.a(5)
+	step(c3, locrian, random:k(0, 9))
+	"""
+	
+	code = r"""
+
+@aaron·talea {3 2} 8 in 8
+
+;@new_line
+.lpf{12}
+:lpf2
+:radio
+talea 3·dorian d
+	
+"""
+	units = parse(code)
+	console.print(f"\nUNITs: {len(units)}")
+	for t in units:
+		console.print(t)
+	assert len(units) == 2

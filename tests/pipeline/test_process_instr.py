@@ -13,8 +13,6 @@ def test_name():
 @aaron·talea {1 2 3} in 8
 """
 	units = parse(code)
-	console.print(f"\nTREES: {len(units)}")
-	console.print(units)
 	trees = parse_raw(code)
 	for t in trees:
 		console.print(t)
@@ -30,8 +28,6 @@ def test_validation_mod():
 @aaron.radio·talea {1 2 3} in 8
 """
 	units = parse(code)
-	console.print(f"\nTREES: {len(units)}")
-	console.print(units)
 	trees = parse_raw(code)
 	for t in trees:
 		console.print(t)
@@ -64,4 +60,64 @@ def test_dyn():
 	assert units[0].name == 'aaron'
 	for unit in units:
 		process(unit)
+	instrument_tracker.clear()
+
+def test_dur_mul():
+	code = r"""
+@aaron.radio·talea {10x2 2 3} in 8·eu 2 8 in 18·mf·dur*3
+"""
+	units = parse(code)
+	assert len(units) == 1
+	assert units[0].name == 'aaron'
+	for unit in units:
+		process(unit)
+	instrument_tracker.clear()
+
+
+def test_dur_equal():
+	code = r"""
+@aaron.radio·talea {10x2 2 3} in 8 ·eu 2 8 in 18·mf·dur=3
+
+@aaron#2.radio·talea {10x2 2 3} in 8·eu 2 8 in 18·mf·dur={1 2}
+
+@aaron#3.radio·talea {10x2 2 3} in 8·eu 2 8 in 18·mf·dur*{1 2}
+
+@aaron#4.radio·talea {10x2 2 3} in 8·eu 2 8 in 18·mf·dur/{1 2}
+"""
+	units = parse(code)
+
+	assert len(units) == 4
+	assert units[0].name == 'aaron'
+	for unit in units:
+		process(unit)
+	instrument_tracker.clear()
+
+def test_dur_keyword():
+	code = r"""
+@aaron.radio·talea {10x2 2 3} in 8·mf· wn qn
+
+"""
+	units = parse(code)
+
+	assert len(units) == 1
+	assert units[0].name == 'aaron'
+	for unit in units:
+		process(unit)
+		console.print(unit)
+		console.print(unit.score['dyn'])
+		console.print(unit.score['dur'])
+	instrument_tracker.clear()
+
+def test_colores():
+	code = r"""
+@aaron.radio·talea {10x2 2 3} in 8·dorian c.. 1 3
+
+"""
+	units = parse(code)
+
+	assert len(units) == 1
+	assert units[0].name == 'aaron'
+	for unit in units:
+		process(unit)
+		console.print(unit)
 	instrument_tracker.clear()

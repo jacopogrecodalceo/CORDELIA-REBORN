@@ -11,15 +11,20 @@ RETURNS
 -------
 	Talea(pattern=[1,0,0,1,0,0,1,0], cycle=8)
 """
-from corpus.score.talea import Talea
+from corpus.score.talea import *
 
 def match(items: list) -> bool:
 	if items[0] == 'eu':
 		return True
 	return False
 
-def main(items: list) -> Talea:
+def main(quality: Quality, instrument: Instrument):
+	items = quality.items
+
 	args = items[1:]
+	if 'in' in args:
+		instrument.cycle = int(args[-1])
+		args = args[:-2]
 
 	pulses = int(args[0])
 	steps = int(args[1])
@@ -28,8 +33,7 @@ def main(items: list) -> Talea:
 	if len(args) == 3:
 		shift = int(args[2])
 
-	return Talea(values=_bjorklund(pulses, steps, shift=shift), cycle=steps)
-
+	instrument.score['talea'] = _bjorklund(pulses, steps, shift=shift)
 
 # ─── internal ────────────────────────────────────────────────────────────────
 

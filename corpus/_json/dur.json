@@ -1,0 +1,17 @@
+{
+   "wn": {
+      "csound": "gkBEATs*4"
+   },
+   "hn": {
+      "csound": "gkBEATs*2"
+   },
+   "qn": {
+      "csound": "gkBEATs"
+   },
+   "en": {
+      "csound": "gkBEATs/2"
+   },
+   "sn": {
+      "csound": "gkBEATs/4"
+   }
+}

@@ -23,7 +23,7 @@ statement: header _SEP atom+ (_SEP atom+)*
 // ─── PHRASE ──────────────────────────────────────────────────────────────────
 
 phrase:  header modifier* _SEP* score
-score: ((_DELIM | _NL) quality)+
+score: ((_DELIM | _NL) _SEP* quality _SEP*)+
 quality: _SEP* atom+ (_SEP atom+)*
 
 // ─── MODIFIERS ───────────────────────────────────────────────────────────────
@@ -40,9 +40,7 @@ array: "(" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* ")"
 
 // ─── ATOM ────────────────────────────────────────────────────────────────────
 
-?atom: atom "+" atom
-    | atom "+" atom
-    | NAME array -> func
+atom: NAME array -> func
     | array
     | NAME
     | NUMBER
@@ -52,4 +50,5 @@ array: "(" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* ")"
 
 NAME.3:   /[a-zA-Z_][a-zA-Z0-9_]*/
 NUMBER.2: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
-SYM.1: /[^\s·|@:{}\(\){}\na-zA-Z+\n]+/
+//SYM.1: /[^\s·|@:{}\(\){}\na-zA-Z0-9_\n]+/
+SYM.1: /[^\s·|@:{}\(\){}a-zA-Z0-9_\n]+/

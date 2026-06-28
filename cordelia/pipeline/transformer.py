@@ -24,6 +24,12 @@ class CordeliaTransformer(Transformer):
 			print('-'*32)
 		return str(c) """
 
+	def atom(self, children):
+		c = children[0]
+		if isinstance(c, Array):
+			return c
+		return str(c)
+
 	def func(self, children):
 		name = str(children[0])
 		arr = children[1] if len(children) > 1 else Array()
@@ -51,7 +57,7 @@ class CordeliaTransformer(Transformer):
 	# ── header ────────────────────────────────────────────────────────────────
 
 	def id(self, children):
-		return children[0]
+		return int(children[0])
 
 	def header(self, children):
 		if len(children) > 1:
@@ -99,4 +105,4 @@ class CordeliaTransformer(Transformer):
 					raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
 		if score is None:
 			raise CordeliaDeductionError(f"phrase '{name}' has no score")
-		return Instrument(name=name, score=score.items, modifiers=modifiers, id=instr_id)
+		return Instrument(name=name, qualities=score.items, modifiers=modifiers, instr_id=instr_id)

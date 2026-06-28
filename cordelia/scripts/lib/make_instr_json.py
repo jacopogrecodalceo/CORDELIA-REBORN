@@ -3,19 +3,19 @@ from pathlib import Path
 from cordelia.console import console
 import cordelia.path
 
-INPUT_DIR = Path(cordelia.path.corpus / 'mod')
-OUTPUT_JSON = cordelia.path.corpus / '_json' / 'mods.json'  # Changed: use / operator
+INPUT_DIR = Path(cordelia.path.corpus / 'instr')
+OUTPUT_JSON = cordelia.path.corpus / '_json' / 'instruments.json'  # Changed: use / operator
 
-mods = {}
+instrs = {}
 for path in INPUT_DIR.rglob("*.orc"):
     name = path.stem
-    if name in mods:
+    if name in instrs:
         raise ValueError(f'DUPLICATE NAME IN OPCODE: {name}')
-    mods[name] = str(path)
+    instrs[name] = str(path)
 
 # Fixed: need to pass the data as second argument
 with open(OUTPUT_JSON, 'w') as f:
-    json.dump(mods, f, indent=3)  # Added indent for readability
+    json.dump(instrs, f, indent=3)  # Added indent for readability
 
 # Fixed: use the correct path
 console.print(f'File written @{OUTPUT_JSON}')

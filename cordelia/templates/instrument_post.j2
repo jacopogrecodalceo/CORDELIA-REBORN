@@ -1,0 +1,8 @@
+gS{{ name }}{{ '[]' }} init ginchnls
+ich init 1
+until ich > ginchnls do
+	gS{{ name }}{{ '[ich-1]' }} sprintf	"{{ name }}_%i", ich
+	schedule 950+giINSTR_CLEAR_COUNT/1000, 0, -1, gS{{ name }}{{ '[ich-1]' }}
+	ich += 1
+	giINSTR_CLEAR_COUNT += 1
+od

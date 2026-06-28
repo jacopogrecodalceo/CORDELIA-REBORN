@@ -76,7 +76,6 @@ endif
 schedule "heartbeat_print", 0, 0
 
 	endin
-;	schedule("heart", .5, -1)
 ;	alwayson("heart")
 
 	instr tuning_info
@@ -118,13 +117,17 @@ gipulse = i(gkpulse)
 gibeats = i(gkBEATs)
 gibeatms = i(gkBEATms)
 gibeatf = i(gkBEATf)
-itun = i(gktuning)
-prints("\n────────── heartbeat signal ──────────\n")
-prints("   ☀️ BPM : %.02f\n", gipulse)
-prints("   ⏱  BEATS: %.02f s\n", gibeats)
-prints("   🌐 FREQ : %.02f Hz\n", gibeatf)
-prints("   🎚  TUNE : %.02f\n", itun)
-prints("--------------------------------------\n")
+gibeatn = i(gkBEATn)
+prints("heartbeat 🦄 ")
+prints("· ")
+prints("%04i ", gibeatn)
+prints("· ")
+prints("BPM: %.02f", gipulse)
+prints("· ")
+prints("BEATS: %.02fs", gibeats)
+prints("· ")
+prints("FREQ: %.02fHz", gibeatf)
+prints("\n")
 turnoff
 	endin
 

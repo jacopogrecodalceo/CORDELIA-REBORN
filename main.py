@@ -9,23 +9,28 @@ THREAD ARCHITECTURE
 		├── csound performance thread   (audio, highest priority)
 		├── udp thread                  (network I/O, blocking recv)
 		├── scheduler thread            (phase polling, sends to csound)
-		└── main thread                 (keepalive + graceful shutdown)
+		└── csound monitor thread       (watchdog, triggers shutdown)
 
 COMMUNICATION
 -------------
-	udp thread → queue → scheduler thread
-	scheduler thread → csound performance thread (via pt.scoreEvent)
+	udp thread → parse → process → OrchestraManager queues
+	scheduler thread → OrchestraManager.flush() → cs.compileOrc()
+	csound monitor → stop_event → all threads
 """
 
 import time
-import queue
 import signal
 import threading
 import ctcsound
 
 from loguru import logger
 
-import cordelia.pipeline.qualities
+import cordelia.pipeline.processor.instrument.score
+import cordelia.pipeline.processor.run
+import cordelia.pipeline.post_processor
+import cordelia.csound_conversion.instrument_class
+import cordelia.registry
+
 from cordelia.csound.run import build_orchestra, init
 from cordelia.pipeline.parser import parse
 from cordelia.udp import UDPRouter, UDPWorker
@@ -37,141 +42,108 @@ from cordelia.const import (
 )
 from config.options import flags
 
-# ─── SHARED STATE ─────────────────────────────────────────────────────────────
-
-# parsed units from UDP land here, scheduler consumes them
-event_queue: queue.Queue = queue.Queue()
-
-# signals all threads to stop
-stop_event = threading.Event()
-
 
 # ─── CSOUND ───────────────────────────────────────────────────────────────────
 
-def build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
+def _build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
 	init()
-
 	cs = ctcsound.Csound()
-
 	for f in flags:
 		cs.setOption(f)
-
-	orc    = build_orchestra()
-	result = cs.compileOrcAsync(orc)
-	if result != 0:
+	orc = build_orchestra()
+	if cs.compileOrcAsync(orc) != 0:
 		raise RuntimeError("orchestra compilation failed")
-
 	cs.start()
-
 	pt = ctcsound.CsoundPerformanceThread(cs.csound())
 	pt.play()
-
 	time.sleep(SHORT_REST_AFTER_INIT)
-	logger.info("csound ready")
-
+	logger.info("csound | ready")
 	return cs, pt
 
 
-# ─── UDP THREAD ───────────────────────────────────────────────────────────────
+# ─── THREADS ──────────────────────────────────────────────────────────────────
 
-def udp_thread_fn(worker: UDPWorker):
+def _udp_thread_fn(worker: UDPWorker) -> None:
 	"""
 	blocking UDP listener.
-	parses incoming messages and puts units into event_queue.
+	parses incoming messages, runs the full pipeline.
+	OrchestraManager queues are filled here as a side effect of convert().
 	never touches csound directly.
 	"""
 	logger.info("udp | listening")
-
-	while not stop_event.is_set():
+	while not cordelia.registry.stop_event.is_set():
 		item = worker.get(timeout=0.5)
-
 		if not item:
 			continue
-
 		direction, msg = item
 		logger.debug(f"udp | {direction} | {msg!r}")
-
 		try:
 			units = parse(msg)
 			for u in units:
-				event_queue.put(u)
+				logger.debug(f"STARTING PROCESS: {u}")
+				cordelia.pipeline.processor.run.process(u)
+				logger.debug(f"STARTING POST PROCESS: {u}")
+				cordelia.pipeline.post_processor.run(u)
+				logger.debug(f"STARTING CONVERSION: {u}")
+				cordelia.csound_conversion.instrument_class.convert(u)
 		except Exception as e:
-			logger.error(f"udp | parse error: {e}")
+			logger.error(f"udp | pipeline error: {e}")
 
 
-# ─── SCHEDULER THREAD ─────────────────────────────────────────────────────────
-
-def scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThread):
+def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThread) -> None:
 	"""
 	phase-based scheduler.
-	consumes units from event_queue and sends events to csound.
-	sleeps between polls to avoid busy waiting.
+	flushes OrchestraManager queues and sends compiled orc to csound.
 	"""
 	logger.info("scheduler | ready")
-
-	while not stop_event.is_set():
-		# drain the queue — apply any new units
-		while not event_queue.empty():
-			try:
-				unit = event_queue.get_nowait()
-				_apply_unit(unit, cs, pt)
-			except queue.Empty:
-				break
-
-		# TODO: phase polling and event scheduling goes here
-
+	while not cordelia.registry.stop_event.is_set():
+		if cordelia.registry.orchestra_manager.filled:
+			orc = cordelia.registry.orchestra_manager.flush()
+			logger.debug(f"scheduler | compiling orc block")
+			console.print(orc)
+			cs.compileOrcAsync(orc)
 		time.sleep(QUERY_UDP_WHILE_SLEEP_TIME)
 
-def csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread):
-	"""
-	watches the csound performance thread.
-	when csound stops, signals all other threads to stop.
-	"""
-	pt.join()   # blocks until csound performance thread exits
-	logger.info("csound stopped — shutting down")
-	stop_event.set()
 
-def _apply_unit(unit, cs, pt):
-	"""dispatch a parsed unit to the right handler"""
-	logger.debug(f"scheduler | applying unit: {unit}")
-	# TODO: dispatch to instrument/variable handlers
+def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
+	"""
+	watchdog: blocks until csound stops, then triggers global shutdown.
+	"""
+	pt.join()
+	logger.info("csound stopped — triggering shutdown")
+	cordelia.registry.stop_event.set()
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
-def main():
-	# load quality plugins before anything else
-	cordelia.pipeline.qualities.load()
+def main() -> None:
 
-	# build csound
-	cs, pt = build_csound()
+	cordelia.pipeline.processor.instrument.score.load()
 
-	# start udp
+	cs, pt = _build_csound()
+
 	worker = UDPWorker(UDPRouter(UDP_PORTS))
 	worker.start()
 
-	# start threads
 	threads = [
-		threading.Thread(target=csound_monitor_fn,    args=(pt,),        daemon=True, name="csound_monitor"),
-		threading.Thread(target=udp_thread_fn,         args=(worker,),    daemon=True, name="udp"),
-		threading.Thread(target=scheduler_thread_fn,   args=(cs, pt),     daemon=True, name="scheduler"),
+		threading.Thread(target=_csound_monitor_fn, args=(pt,),      daemon=True, name="csound_monitor"),
+		threading.Thread(target=_udp_thread_fn,      args=(worker,),  daemon=True, name="udp"),
+		threading.Thread(target=_scheduler_thread_fn, args=(cs, pt),  daemon=True, name="scheduler"),
 	]
 	for t in threads:
 		t.start()
-		logger.info(f"thread started: {t.name}")
+		logger.info(f"thread | started: {t.name}")
 
-	# graceful shutdown on ctrl+c
-	def _shutdown(sig, frame):
-		logger.info("shutting down...")
-		stop_event.set()
+	def _shutdown(sig, frame) -> None:
+		logger.info("shutdown | signal received")
+		cordelia.registry.stop_event.set()
 
 	signal.signal(signal.SIGINT, _shutdown)
 
-	# keep main thread alive
-	while not stop_event.is_set():
+	while not cordelia.registry.stop_event.is_set():
 		time.sleep(1/8)
 
-	# cleanup
+	logger.info("shutdown | cleaning up")
 	worker.stop()
 	pt.stop()
 	pt.join()

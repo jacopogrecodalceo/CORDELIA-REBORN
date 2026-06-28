@@ -4,7 +4,7 @@ from cordelia.pipeline.lexer import lex
 from cordelia.pipeline.transformer import CordeliaTransformer
 import cordelia.path
 
-GRAMMAR_PATH = cordelia.path.core / 'pipeline' / 'grammar.lark'
+GRAMMAR_PATH = cordelia.path.core / 'grammar.lark'
 logger.debug(GRAMMAR_PATH)
 
 _transformer = CordeliaTransformer()

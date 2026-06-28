@@ -1,0 +1,7 @@
+; ── instrument {{ instrument.uid }} UPDATE ───────────────────────────
+gk{{ instrument.uid }}_cycle = {{ instrument.cycle }}
+
+{% for quality, values in instrument.score.items() %}
+gi{{ instrument.uid }}_{{ quality }} ftgen {{ instrument.ft_num[quality] }}, 0, {{ FTGEN_SIZE }}, -2, {{ values | length }}, {{ values | join(', ') }}
+{% endfor %}
+

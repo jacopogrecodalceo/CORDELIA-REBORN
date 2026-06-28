@@ -6,10 +6,8 @@ import re
 
 
 def _strip_comments(source: str) -> str:
-	return _COMMENT.sub("", source)
+	return _COMMENT.sub("", source) """
 
-
- """
 
 def _strip_blank_lines(chunk: str) -> str:
 	lines = [l for l in chunk.splitlines() if l.strip()]

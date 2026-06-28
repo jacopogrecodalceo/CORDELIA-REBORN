@@ -25,8 +25,14 @@ icps	cpstmid i(gktuning)
  */
 
 
-	instr alive
+	/* instr alive
 	printk 1, random:k(0, 5)
 	endin
-	schedule "alive", 0, -1
+	schedule "alive", 0, -1 */
 
+ich init 1
+until ich > ginchnls do
+        schedule 950+giINSTR_CLEAR_COUNT/1000, 0, -1, sprintf("mouth_%i", ich)
+		ich +=1
+        giINSTR_CLEAR_COUNT += 1
+od

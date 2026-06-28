@@ -1,16 +1,23 @@
+from pathlib import Path
 from loguru import logger
-from cordelia.const import data
-import cordelia.session.instrument_tracker as instrument_tracker
+from cordelia.const import data, jinja_env
+
 
 def validate(name: str):
 	logger.debug(f'checking {name} in data names')
-	if name in data.instruments:
+	if name in data['instrument']:
 		return True
 	return False
+ 
+def load(name: str):
+	logger.debug(f'loading {name}..')
+	path = Path(data['instrument'][name])
+	instr_orc = path.read_text()
 
-def has_unique_id(name_id: str):
-	if instrument_tracker.has(name_id):
-		return False
-	instrument_tracker.add(name_id)
-	logger.debug(f'{name_id} added to list')
-	return True
+	route_template = jinja_env.get_template('instrument_post.j2')
+	instr_orc += f'\n; ··· ROUTING {name}\n'
+	instr_orc += route_template.render(name=name)
+	""" src, _, _ = jinja_env.loader.get_source(jinja_env, 'instrument_post.j2')
+	logger.debug(src)
+	logger.debug(instr_orc) """
+	return instr_orc

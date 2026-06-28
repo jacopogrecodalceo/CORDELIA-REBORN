@@ -10,16 +10,21 @@ RETURNS
 -------
 	Talea(pattern=[1,0,0,1,0,0,1,0], cycle=8)
 """
-from corpus.score.dur import *
+from corpus.score.dyn import *
+import cordelia.const
 
 def match(items: list) -> bool:
-	if items[0].startswith('dur') or items[0] == 'dur':
+	if items[0] in cordelia.const.data['dur']:
 		return True
 	return False
 
-def main(items: list) -> Dur:
-	if items[0].startswith('dur'):
-		return Dur([1])
-	elif items[0] == 'dur':
-		args = items[1:]
-		return Dur([2])
+def main(quality: Quality, instrument: Instrument):
+	items = quality.items
+	validate(items)
+	instrument.score['dur'] = items
+
+def validate(items: list) -> bool:
+	for i in set(items):
+		if i not in cordelia.const.data['dur']:
+			raise ValueError(f"{i} does not belong to dyns!!")
+

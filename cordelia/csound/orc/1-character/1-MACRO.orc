@@ -5,22 +5,33 @@
 
 #define atk(atkms)			#+($atkms/1000)#
 
+#define once(infill)		#once(fillarray($infill))#
+
+; Global serial port handle
+/* gicordelia_serial_handle init -1
+gicordelia_serial_dac_max init 65535
+gicordelia_serial_baudrate init 9600 */
+
 ; variation selected in each instrument [0 - 1]
 gidyn_var init 1
 #define	dyn_var #(idyn+random:i(-(idyn/10), idyn/10)*gidyn_var)#
 
 ; variation selected in each instrument [0 - 1]
 gidur_var init 0
-#define dur_var(dur_var_ratio) #idur_var init idur - (random:i(0, idur*(1 - 1/$dur_var_ratio))*gidur_var)#
+#define dur_var(dur_var_ratio) #
+
+idur_var init (idur-(random:i(0, idur*(1 - 1/$dur_var_ratio))*gidur_var))
+
+#
 
 ;INSTRUMENT MACROs
 #define params(instr_name) #
-Sinstr		init "$instr_name"
+Sinstr	init "$instr_name"
 idur		init abs(p3)
 idyn		init p4
 ienv		init p5
 icps		init p6
-ich			init p7
+ich		init p7
 #
 
 #define cps_hi_limit(hi_freq) #
@@ -132,4 +143,6 @@ girpr_ck	init 95$ms
 #define rpr_ck		#(linseg:k(0, girpr_ck, 1, p3-(girpr_ck*2), 1, girpr_ck, 0))#
 #define rpr_courbe	#(cosseg:k(0, p3/2, 1, p3/2, 0))#
 #define fill		#fillarray#
+
+prints "CORDELIA | CSOUND ··· ALL MACROs END\n"
 

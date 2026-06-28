@@ -15,6 +15,8 @@ RETURNS
 -------
 	Talea(pattern=[1,0,0,1,0,0,1,0], cycle=8)
 """
+from abjad import Instrument
+
 from corpus.score.talea import *
 
 def match(items: list) -> bool:
@@ -22,7 +24,9 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(items: list) -> Talea:
+def main(quality: Quality, instrument: Instrument) -> Talea:
+	items = quality.items
+
 	args = items[1:]
 	
 	# Extract and normalize pulse pattern
@@ -61,4 +65,4 @@ def main(items: list) -> Talea:
 			# Truncate if longer than pad length
 			pulse_values = pulse_values[:pad_length]
 	
-	return Talea(values=pulse_values, cycle=duration)
+	instrument.score['talea'] = pulse_values

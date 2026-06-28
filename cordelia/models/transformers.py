@@ -3,12 +3,33 @@ from dataclasses import dataclass, field
 from typing import Any
 from lark import Transformer, Token, Tree
 
+from enum import Enum
+
+class State(Enum):
+	BORN = "born"
+	SKIP = "skip"
+	PATCH = "patch"
+	DEAD = "dead"
+
 @dataclass
 class Instrument:
 	name: str
-	score: list[Quality] = field(default_factory=list)
-	modifiers: list[Modifier] = field(default_factory=list)
-	id: int = field(default_factory=1)
+	qualities: list[Quality]
+	modifiers: list[Modifier]
+	instr_id: int = field(default_factory=1)
+	score: dict = field(default_factory=lambda: {
+		'talea': [],
+		'colores': [1],
+		'dur': [1],
+		'dyn': ['mf'],
+		'env': ['cls'],
+		'space': [0],
+		'character': []
+	})
+
+	state: State = State.BORN
+	cycle: int = 8
+
 
 @dataclass
 class Variable:
@@ -25,7 +46,10 @@ class Modifier:
 
 @dataclass
 class Score:
-   items: list[Quality] = field(default_factory=list)
+	"""
+	this will always be used during the transoformer phase
+	"""
+	items: list[Quality] = field(default_factory=list)
 
 # ---------------------------------------------------------------------------- #
 

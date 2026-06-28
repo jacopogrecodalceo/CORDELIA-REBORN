@@ -1,2 +1,2 @@
-from cordelia.models.score import *
-from cordelia.models.transformers import *
+from cordelia.models.transformers import Instrument, Array, Quality
+from cordelia.models.score import Space
