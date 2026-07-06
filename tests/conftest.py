@@ -1,2 +1,2 @@
-from cordelia.pipeline.processor.instrument.score import load
-load()
+from cordelia.pipeline.deducer import load_qualities
+load_qualities()

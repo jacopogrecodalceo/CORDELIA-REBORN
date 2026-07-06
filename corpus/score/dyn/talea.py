@@ -18,10 +18,11 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument) -> Dyn:
-	items = quality.items
+@auto_config(Dyn)
+def main(args):
+	items = args.quality.items
 	validate(items)
-	instrument.score['dyn'] = items
+	return items
 
 def validate(items: list) -> bool:
 	for i in set(items):

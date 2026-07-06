@@ -18,6 +18,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
-	instrument.score['dur'] = items
+@auto_config(Dur)
+def main(args):
+	items = args.quality.items
+	return items

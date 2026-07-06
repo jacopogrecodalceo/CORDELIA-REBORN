@@ -17,7 +17,7 @@ class UDPRouter:
 
          self.socket_map[sock] = name
 
-         print(f"OPEN {name} @ {port}")
+         print(f"OPEN {name} @{port}")
 
    def close_ports(self) -> None:
       for sock in self.socket_map:

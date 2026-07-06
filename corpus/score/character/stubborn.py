@@ -20,7 +20,8 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument) -> Character:
+@auto_config(Character)
+def main(args):
 	#items = quality.items
-	instrument.score['characters'] = ['stubborn']
+	return 'stubborn'
 

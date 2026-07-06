@@ -18,11 +18,12 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
+@auto_config(Env)
+def main(args):
+	items = args.quality.items
 
 	validate(items)
-	instrument.score['env'] = items
+	return items
 
 def validate(items: list) -> bool:
 	for i in set(items):

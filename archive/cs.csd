@@ -20,6 +20,7 @@
 ginchnls init nchnls
 gioffch init 0
 giINSTR_CLEAR_COUNT init 0
+giFTGEN_SIZE init 8192
 
 		gimainclock_ch init 0
 		giquarterclock_ch init 0
@@ -157,11 +158,8 @@ prints("--------------------------------------\n")
 
 
 
-
-
-; ································································································································
-; BEGIN ORC | 01·04pm
-; ································································································································
+;BEGIN ORC | 02·34pm································································································································
+schedule "heart", 0, -1
 ;       cls
 ;       a 3-points function from linear segments
 gicls_atk               init sr * .005
@@ -178,37 +176,30 @@ gicls           ftgen   0, 0, gienvdur, 7, 0, gicls_atk, 1, gicls_dur*gicls_dec,
 
 
 
+;INSTRUMENT repuck LOADED································································································································
                 $start_instr(repuck)
 
 ipanfreq        init random:i(-.25, .25)
 
 aout    repluck random:i(.015, .35), $dyn_var, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3(1, random:i(.05, .25),  gisine)
-aout    dcblock2 aout
 
 aout    buthp aout, icps - icps/12
-        outall aout
+        outall aout*cosseg:a(1, idur, 0)
                 $dur_var(10)
                 $end_instr
 
-; ··· ROUTING repuck
-gSrepuck[] init ginchnls
-ich init 1
-until ich > ginchnls do
-        gSrepuck[ich-1] sprintf "repuck_%i", ich
-        schedule 950+giINSTR_CLEAR_COUNT/1000, 0, -1, gSrepuck[ich-1]
-        ich += 1
-        giINSTR_CLEAR_COUNT += 1
-od
+
 ; ── INSTRUMENT repuck_1 BIRTH ────────────────────────────
-gkrepuck_1_cycle init 8
+gkrepuck_1_cycle init 4
 
-girepuck_1_talea ftgen 1001, 0, 8192, -2, 8, 1, 2, 3, 4, 5, 6, 7, 8
-girepuck_1_colores ftgen 1002, 0, 8192, -2, 3, 300, 400, 200
-girepuck_1_dur ftgen 1003, 0, 8192, -2, 1, 8
-girepuck_1_dyn ftgen 1004, 0, 8192, -2, 1, $mf
-girepuck_1_env ftgen 1005, 0, 8192, -2, 1, gicls
-girepuck_1_space ftgen 1006, 0, 8192, -2, 1, 0
+girepuck_1_talea ftgen 1001, 0, giFTGEN_SIZE, -2, 8, 0, 1, 0, 2, 0, 0, 3, 0
+girepuck_1_colores ftgen 1002, 0, giFTGEN_SIZE, -2, 2, 300, 500
+girepuck_1_dur ftgen 1003, 0, giFTGEN_SIZE, -2, 3, 24, 36, 36
+girepuck_1_dyn ftgen 1004, 0, giFTGEN_SIZE, -2, 1, $mf
+girepuck_1_env ftgen 1005, 0, giFTGEN_SIZE, -2, 1, gicls
+girepuck_1_space ftgen 1006, 0, giFTGEN_SIZE, -2, 1, 0
 
+gkrepuck_1_talea_count init -1
 gkrepuck_1_colores_count init -1
 gkrepuck_1_dur_count init -1
 gkrepuck_1_dyn_count init -1
@@ -219,15 +210,22 @@ gkrepuck_1_space_count init -1
 ktalea_last init -1
 kinit_flag  init 1
 
+kcycle_reset init 1
 kmain   chnget "heart"
+
+if kmain < kcycle_reset then
+        kcycle_reset = -1
+endif
 kphase  = (kmain * gkrepuck_1_cycle) % 1
-ktalea_len  table 0, girepuck_1_talea
-ktalea_idx = floor(kphase * ktalea_len) + 1
-ktalea  table ktalea_idx, girepuck_1_talea
-printk 1, ktalea_idx
+
+ktalea_len      table 0, girepuck_1_talea
+ktalea_idx      = floor(kphase * ktalea_len) + 1
+ktalea          table ktalea_idx, girepuck_1_talea
+
 if ktalea > 0 && ktalea != ktalea_last then
-printk2 ktalea
         if kinit_flag == 1 then
+                kcycle_reset = kmain
+                gkrepuck_1_talea_count = ktalea - 1
                 gkrepuck_1_colores_count = ktalea - 1
                 gkrepuck_1_dur_count = ktalea - 1
                 gkrepuck_1_dyn_count = ktalea - 1
@@ -236,59 +234,57 @@ printk2 ktalea
                 kinit_flag = 0
         endif
 
+        printf "talea:%09f, last: %09f\n", random:k(1, 2), ktalea, ktalea_last
+
+        ; ··· talea
         ; ··· colores
         kcolores_len  table 0, girepuck_1_colores
         kcolores_idx  = (gkrepuck_1_colores_count % kcolores_len) + 1
         kcolores      table kcolores_idx, girepuck_1_colores
-        ; ···
         ; ··· dur
         kdur_len  table 0, girepuck_1_dur
         kdur_idx  = (gkrepuck_1_dur_count % kdur_len) + 1
         kdur      table kdur_idx, girepuck_1_dur
-        ; ···
         ; ··· dyn
         kdyn_len  table 0, girepuck_1_dyn
         kdyn_idx  = (gkrepuck_1_dyn_count % kdyn_len) + 1
         kdyn      table kdyn_idx, girepuck_1_dyn
-        ; ···
         ; ··· env
         kenv_len  table 0, girepuck_1_env
         kenv_idx  = (gkrepuck_1_env_count % kenv_len) + 1
         kenv      table kenv_idx, girepuck_1_env
-        ; ···
         ; ··· space
         kspace_len  table 0, girepuck_1_space
         kspace_idx  = (gkrepuck_1_space_count % kspace_len) + 1
         kspace      table kspace_idx, girepuck_1_space
-        ; ···
 
         ; ── schedule events ──────────────────────────────────────
         if kspace == 0 then
                 kch = 1
-                until kch > nchnls do
-                        schedulek "repuck", 0, kdur  * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kch
+                until kch > ginchnls do
+                        schedulek "repuck", 0, kdur * gkBEATs * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kch
                         kch += 1
                 od
         else
-                schedulek "repuck", 0, kdur  * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kspace
+                schedulek "repuck", 0, kdur * gkBEATs * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kspace
         endif
 
+        gkrepuck_1_talea_count += 1
         gkrepuck_1_colores_count += 1
         gkrepuck_1_dur_count += 1
         gkrepuck_1_dyn_count += 1
         gkrepuck_1_env_count += 1
         gkrepuck_1_space_count += 1
+
         ktalea_last = ktalea
+        if kcycle_reset == -1 then
+                ktalea_last = -1
+        endif
 endif
         endin
 
-
-schedule "repuck_1", ksmps/sr, -1
-; ································································································································
-; END ORC | 01·04pm
-; ································································································································
-
-
+schedule "repuck_1", 0, -1
+;END ORC | 02·34pm································································································································
 
 
 

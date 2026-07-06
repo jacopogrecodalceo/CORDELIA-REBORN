@@ -4,8 +4,8 @@ from lark import Tree
 from lark.exceptions import UnexpectedInput
 from cordelia.pipeline.parser import parse, parse_raw
 from cordelia.console import console
-from cordelia.pipeline.processor.run import process
-import cordelia.pipeline.post_processor
+from archive.processor.run import process
+import archive.post_processor
 from cordelia.pipeline.transformer import Instrument, Quality, Variable, Array, Func
 import cordelia.session.instrument_tracker as instrument_tracker
 
@@ -19,7 +19,7 @@ def test_simple():
 	assert units[0].name == 'aaron'
 	for unit in units:
 		process(unit)
-		cordelia.pipeline.post_processor.run(unit)
+		archive.post_processor.run(unit)
 		console.print(unit)
 	assert units[0].score['dur'] == ['1', '2', '3']
 	instrument_tracker.clear()
@@ -34,7 +34,7 @@ def test_eu1():
 	assert units[0].name == 'aaron'
 	for unit in units:
 		process(unit)
-		cordelia.pipeline.post_processor.run(unit)
+		archive.post_processor.run(unit)
 		console.print(unit)
 	instrument_tracker.clear()
 
@@ -48,7 +48,7 @@ def test_eu2():
 	assert units[0].name == 'aaron'
 	for unit in units:
 		process(unit)
-		cordelia.pipeline.post_processor.run(unit)
+		archive.post_processor.run(unit)
 		console.print(unit)
 	assert units[0].score['dur'] == [8, 6, 6, 6, 6]
 	instrument_tracker.clear()
@@ -63,7 +63,7 @@ def test_eu3():
 	assert units[0].name == 'aaron'
 	for unit in units:
 		process(unit)
-		cordelia.pipeline.post_processor.run(unit)
+		archive.post_processor.run(unit)
 		console.print(unit)
 	assert units[0].score['dur'] == [12, 3, 8]
 	instrument_tracker.clear()

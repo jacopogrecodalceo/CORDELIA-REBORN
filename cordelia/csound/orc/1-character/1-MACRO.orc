@@ -20,8 +20,6 @@ gidyn_var init 1
 gidur_var init 0
 #define dur_var(dur_var_ratio) #
 
-idur_var init (idur-(random:i(0, idur*(1 - 1/$dur_var_ratio))*gidur_var))
-
 #
 
 ;INSTRUMENT MACROs

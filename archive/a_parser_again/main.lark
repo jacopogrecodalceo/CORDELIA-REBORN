@@ -1,66 +1,67 @@
-// ─── WHITESPACE ──────────────────────────────────────────────────────────────
 %import common.NEWLINE
-%ignore /[ \t\r]+/
+%import common.WS_INLINE
 
-// ─── ENTRY ───────────────────────────────────────────────────────────────────
-program: _NL* (unit _NL*)*
+%ignore /;[^\n]*/
+%ignore /;@[\s\S]*?$/
 
-_NL: NEWLINE
+// ─────────────────────────────────────────────
+// TOKENS
+// ─────────────────────────────────────────────
 
-// ─── UNIT ────────────────────────────────────────────────────────────────────
-unit: phrase
-	| statement
+NAME:   /[a-zA-Z_][a-zA-Z0-9_]*/
+NUMBER: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
+NOTE:   /[a-g](?:\.+|'+)?/
+REPEAT: /x\d+/
 
-// ─── STATEMENT ───────────────────────────────────────────────────────────────
-// header + score + closing delimiter
-statement: header score_line delim
+_NL:    NEWLINE
+_DELIM: "·" | "|"
+_SEP: WS_INLINE
 
-// ─── PHRASE ──────────────────────────────────────────────────────────────────
-// header + modifiers + score segments separated/closed by delimiters
-phrase: header modifier* DELIM score_line (delim score_line)*
-      | header modifier* (_NL modifier+)* delim score_line (delim score_line)*
-
-delim: DELIM | _NL
+SYM: /\+|\-|\*|\/|<|>|=|\?|\./
 
 // ─── HEADER ──────────────────────────────────────────────────────────────────
-header: "@" IDENTIFIER
+header: "@" NAME ("#" NUMBER)?
 
-// ─── MODIFIERS ───────────────────────────────────────────────────────────────
-modifier: dot_mod
-        | colon_mod
+// ─── ENTRY ───────────────────────────────────────────────────────────────────
 
-dot_mod:   "." IDENTIFIER call?
-colon_mod: ":" IDENTIFIER call?
+?unit: phrase | statement
 
-// ─── CALL ────────────────────────────────────────────────────────────────────
-call: "(" [arg_list] ")"
+// ─── STATEMENT ───────────────────────────────────────────────────────────────
 
-arg_list: arg ("," arg)*
+statement: header _SEP expr (_SEP expr)*
 
-arg: IDENTIFIER
-   | NUMBER
-   | STRING
+// ─── PHRASE ──────────────────────────────────────────────────────────────────
 
-// ─── DELIMITER ───────────────────────────────────────────────────────────────
-DELIM: "·" | "|"
+phrase:  header modifier* _SEP* score
+score: ((_DELIM | _NL) _SEP* quality _SEP*)+
+quality: _SEP* expr (_SEP expr)*
+// ─────────────────────────────────────────────
+// MODIFIERS
+// ─────────────────────────────────────────────
 
-// ─── SCORE ───────────────────────────────────────────────────────────────────
-score_line: score_atom+
+modifier: _NL* (serial | parallel)
 
-score_atom: IDENTIFIER
-           | NUMBER
-           | SYMBOL
-           | LBRACE
-           | RBRACE
-           | ","
+serial:   "." NAME array? ("{}"|"()")?
+parallel: ":" NAME array? ("{}"|"()")?
 
-// ─── TOKENS ──────────────────────────────────────────────────────────────────
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_#]*/
-NUMBER:     /-?\d+(\.\d+)?/
-STRING:     /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
-LBRACE:     "{"
-RBRACE:     "}"
-SYMBOL:     /[#b]/
+// ─────────────────────────────────────────────
+// STRUCTURES
+// ─────────────────────────────────────────────
 
-COMMENT: ";" /[^\n]*/
-%ignore COMMENT
+array: "(" _SEP* expr (_SEP+ expr)* _SEP* ")"
+     | "{" _SEP* expr (_SEP+ expr)* _SEP* "}"
+
+func: NAME array
+
+// ─────────────────────────────────────────────
+// EXPRESSION SYSTEM (THIS IS THE KEY FIX)
+// ─────────────────────────────────────────────
+
+?expr: term (SYM term)*
+
+?term: func
+     | array
+     | NUMBER REPEAT -> repeat
+     | NOTE
+     | NUMBER
+     | NAME

@@ -1,5 +1,5 @@
 import re
-from cordelia.models.transformers import Array, Instrument, Variable, Func
+from cordelia.models.ast import Array, Instrument, Variable, Func
 
 REPEAT_PAT = re.compile(r"x(\d+)")
 

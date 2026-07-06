@@ -3,8 +3,8 @@ from pathlib import Path
 from cordelia.console import console
 import cordelia.path
 
-INPUT_DIR = Path(cordelia.path.corpus / 'scala')
-OUTPUT_JSON = cordelia.path.corpus / '_json' / 'scalas.json'
+INPUT_DIR = cordelia.path.scala_corpus_dir
+OUTPUT_JSON = cordelia.path.scala_corpus_json
 
 mods = {}
 for path in INPUT_DIR.rglob("*.scl"):

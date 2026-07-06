@@ -6,6 +6,5 @@ aout	repluck random:i(.015, .35), $dyn_var, icps + random:i(-ipanfreq, ipanfreq)
 aout	dcblock2 aout
 
 aout	buthp aout, icps - icps/12
-	outall aout
 		$dur_var(10)
 		$end_instr

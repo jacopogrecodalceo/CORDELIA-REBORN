@@ -1,12 +1,9 @@
-from __future__ import annotations
 import re
 
-
-""" _COMMENT = re.compile(r";[^\n]*")
-
+_COMMENT = re.compile(r";[^\n]*")
 
 def _strip_comments(source: str) -> str:
-	return _COMMENT.sub("", source) """
+	return _COMMENT.sub("", source)
 
 
 def _strip_blank_lines(chunk: str) -> str:
@@ -16,7 +13,7 @@ def _strip_blank_lines(chunk: str) -> str:
 _AT = re.compile(r"(?=@)")
 
 def lex(source: str) -> list[str]:
-	#source = _strip_comments(source)
+	source = _strip_comments(source)
 	raw = re.split(_AT, source)
 	chunks = []
 	for chunk in raw:

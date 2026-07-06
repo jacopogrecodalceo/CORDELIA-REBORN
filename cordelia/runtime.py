@@ -1,8 +1,8 @@
+from cordelia.const import csound_comment_line
 from datetime import datetime
+from dataclasses import dataclass, field
 import threading
 import queue
-
-from lark import logger
 
 class FtPool:
 	def __init__(self, start: int = 1001):
@@ -29,36 +29,8 @@ class FtPool:
 				n += 1
 		return n
 
-class Tracker:
-	def __init__(self):
-		self._trackers: set[str] = set()
-		self._lock: threading.Lock = threading.Lock()
 
-	def add(self, name: str) -> None:
-		with self._lock:
-			self._trackers.add(name)
-
-	def remove(self, name: str) -> None:
-		with self._lock:
-			self._trackers.discard(name)
-
-	def has(self, name: str) -> bool:
-		with self._lock:
-			return name in self._trackers
-
-	def get(self) -> set[str]:
-		with self._lock:
-			return set(self._trackers)
-
-	def clear(self) -> None:
-		with self._lock:
-				self._trackers.clear()
-
-	def count(self) -> int:
-		with self._lock:
-			return len(self._trackers)
-
-class OrchestraManager:
+class OrchestraQueue:
 	_sections: list[str] = ['variable', 'ft', 'instrument', 'modifier', 'score']
 
 	def __init__(self):
@@ -86,9 +58,7 @@ class OrchestraManager:
 	def flush(self) -> str:
 		now = datetime.now().strftime("%I·%M%p").lower()
 		lines = [
-			'; ' + '·'*128,
-			f'; BEGIN ORC | {now}',
-			'; ' + '·'*128
+			csound_comment_line(f'BEGIN ORC | {now}'),
 		]
   
 		if self.init:
@@ -99,25 +69,29 @@ class OrchestraManager:
   
 		for s in self._sections:
 			lines.extend(self._drain(self._queues[s]))
-		lines.extend([
-			'; ' + '·'*128,
-			f'; END ORC | {now}',
-			'; ' + '·'*128
-		])
+		lines.append(csound_comment_line(f'END ORC | {now}'))
 		return '\n'.join(lines)
 
 
 stop_event = threading.Event()
 
-# Module-level singletons
+
+@dataclass
+class CompilerQueue:
+	instrument: OrchestraQueue = field(default_factory=OrchestraQueue)
+	modifier: OrchestraQueue = field(default_factory=OrchestraQueue)
+	ft: OrchestraQueue = field(default_factory=OrchestraQueue)
+	mode: OrchestraQueue = field(default_factory=OrchestraQueue)
+	scala: OrchestraQueue = field(default_factory=OrchestraQueue)
+
+@dataclass
+class Tracker:
+	instrument: set = field(default_factory=set)
+	modifier: dict = field(default_factory=dict)
+	ft: set = field(default_factory=set)
+	mode: set = field(default_factory=set)
+	scala: set = field(default_factory=set)
+
+tracker = Tracker()
+orc_queue = CompilerQueue()
 ft_pool = FtPool()
-
-uid_tracker = {}
-
-tracker = {
-	'instrument': set(),
-	'ft': set(),
-	'modifier': set()
-}   
-
-orchestra_manager = OrchestraManager()

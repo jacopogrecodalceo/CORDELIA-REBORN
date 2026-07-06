@@ -18,11 +18,11 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
+@auto_config(Colores)
+def main(args):
+	items = args.quality.items
 
-	args = items[1:]
+	values = [f for f in items[1:] if float(f) < 17500]
 
 	# default
-	instrument.score['colores'] = args
-
+	return values

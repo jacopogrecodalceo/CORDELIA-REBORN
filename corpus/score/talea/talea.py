@@ -15,8 +15,6 @@ RETURNS
 -------
 	Talea(pattern=[1,0,0,1,0,0,1,0], cycle=8)
 """
-from abjad import Instrument
-
 from corpus.score.talea import *
 
 def match(items: list) -> bool:
@@ -24,45 +22,39 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument) -> Talea:
-	items = quality.items
+@auto_config(Cycle, Talea)
+def main(args) -> Talea:
 
-	args = items[1:]
-	
-	# Extract and normalize pulse pattern
-	pulses = args[0]
-	pulse_values = pulses.items if isinstance(pulses, Array) else [pulses]
+	args = args.quality.items[1:]
+	pulse_values = []
+	cycle = None
+	i = 0
 
-	# Default values
-	duration = 8  # Default duration in beats
-	pad_length = None
-	
-	# Parse remaining arguments
-	i = 1
 	while i < len(args):
-		if isinstance(args[i], int):
-			if i + 1 >= len(args):
-				raise ValueError("'pad' requires a length argument")
-			pad_length = args[i + 1]
-			i += 2
-		
-		elif args[i] == 'in':
+		token = args[i]
+
+		if token == 'in':
 			if i + 1 >= len(args):
 				raise ValueError("'in' requires a duration argument")
-			duration = args[i + 1]
-			i += 2
-		
+			cycle = args[i + 1]
+			break
+
+		if token == '-' and i + 1 < len(args):
+			token = f'-{args[i + 1]}'
+			i += 1
+
+		v = int(token)
+		if v > 0:
+			pulse_values.append(1)
+			pulse_values.extend([0] * (v - 1))
+		elif v == 0:
+			pulse_values.append(0)
 		else:
-				# Unknown argument - skip or raise error
-				i += 1
-	
-	# Apply padding if specified
-	if pad_length is not None:
-		if len(pulse_values) < pad_length:
-			# Pad with zeros to reach desired length
-			pulse_values = pulse_values + [0] * (pad_length - len(pulse_values))
-		else:
-			# Truncate if longer than pad length
-			pulse_values = pulse_values[:pad_length]
-	
-	instrument.score['talea'] = pulse_values
+			pulse_values.extend([0] * abs(v))
+
+		i += 1
+
+	if cycle is None:
+		raise ValueError("talea requires an 'in' clause with a duration")
+
+	return (cycle, pulse_values)

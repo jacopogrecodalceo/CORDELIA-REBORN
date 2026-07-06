@@ -1,6 +1,6 @@
-from cordelia.pipeline.visitor import visit_list
-from cordelia.models.transformers import *
-
+from lark import Transformer
+from cordelia.models.ast import *
+from cordelia.pipeline.expander import expand
 # ---------------------------------------------------------------------------- #
 #                                    ERRORs                                    #
 # ---------------------------------------------------------------------------- #
@@ -13,91 +13,96 @@ class CordeliaDeductionError(Exception):
 # ---------------------------------------------------------------------------- #
 class CordeliaTransformer(Transformer):
 
-	# ── atoms / funcs ─────────────────────────────────────────────────────────
-	""" def atom(self, children):
-		c = children[0]
-		if isinstance(c, Array):
-			return c
-		if c.startswith('x'):
-			print('-'*32)
-			print(c)
-			print('-'*32)
-		return str(c) """
+	# ---------------------------------------------------------------------------- #
+	#                                    TOKENs                                    #
+	# ---------------------------------------------------------------------------- #
+	def NAME(self, token):
+		return str(token)
 
-	def atom(self, children):
-		c = children[0]
-		if isinstance(c, Array):
-			return c
-		return str(c)
+	def NOTE(self, token):
+		return str(token)
+
+	def SYM(self, token):
+		return str(token)
+
+	def DEGREE(self, token):
+		return str(token)
+
+	def REPEAT(self, token):
+		return str(token)
+
+	def NUMBER(self, token):
+		return str(token)
+
+	def ALEA(self, token):
+		return str(token)
+
+	# ---------------------------------------------------------------------------- #
+	#                                     RULEs                                    #
+	# ---------------------------------------------------------------------------- #
 
 	def func(self, children):
 		name = str(children[0])
-		arr = children[1] if len(children) > 1 else Array()
-		items = visit_list(arr.items)
-		return Func(name=name, args=items)
-
-	# ── arrays ────────────────────────────────────────────────────────────────
+		items = children[1]
+		return Func(name=name, args=expand(items))
 
 	def array(self, children):
-		items = visit_list(list(children))
-		return Array(items=items)
-
-	paren_array = array
-	brace_array = array
+		items = list(children)
+		return expand(items)
 
 	# ── quality / score ───────────────────────────────────────────────────────
 
 	def quality(self, children):
-		items = visit_list(list(children))
-		return Quality(items=items)
+		items = list(children)
+		return Quality(items=expand(items))
 
 	def score(self, children):
-		return Score(items=list(children))
+		return PreScore(items=list(children))
 
 	# ── header ────────────────────────────────────────────────────────────────
 
-	def id(self, children):
-		return int(children[0])
-
 	def header(self, children):
 		if len(children) > 1:
-			return str(children[0]), children[1]
-		return str(children[0]), 1
+			return str(children[0]), int(children[1])
+		return str(children[0]), None
 
 	# ── modifiers ─────────────────────────────────────────────────────────────
 
-	def dot_mod(self, children):
+	def serial(self, children):
 		name = str(children[0])
-		arr = children[1] if len(children) > 1 else None
-		return Modifier(kind="sequence", name=name, args=arr)
+		array = children[1] if len(children) > 1 else None
+		if array:
+			array = expand(array)
+		return Modifier(kind="serial", name=name, values=array)
 
-	def colon_mod(self, children):
+	def parallel(self, children):
 		name = str(children[0])
-		arr = children[1] if len(children) > 1 else None
-		return Modifier(kind="parallel", name=name, args=arr)
+		array = children[1] if len(children) > 1 else None
+		if array:
+			array = expand(array)  
+		return Modifier(kind="parallel", name=name, values=array)
 
 	def modifier(self, children):
 		return children[0]
 
-	# ── statement → Variable ──────────────────────────────────────────────────
+	# ---------------------------------------------------------------------------- #
+	#                                 MAIN CLASSEs                                 #
+	# ---------------------------------------------------------------------------- #
 
 	def statement(self, children):
 		name = children[0]
 		items = list(children[1:])
-		visit_listed_items = visit_list(items)
-		return Variable(name=name, value=visit_listed_items)
-
-	# ── phrase → Instrument ───────────────────────────────────────────────────
+		return Variable(name=name, value=expand(items))
 
 	def phrase(self, children):
-		name, instr_id = children[0]
+		name, name_id = children[0] # header
 		rest = children[1:]
 		modifiers = []
 		score = None
 		for c in rest:
 			if isinstance(c, Modifier):
 					modifiers.append(c)
-			elif isinstance(c, Score):
+			elif isinstance(c, PreScore):
 					if score is not None:
 						raise CordeliaDeductionError(f"duplicate score in phrase '{name}'")
 					score = c
@@ -105,4 +110,8 @@ class CordeliaTransformer(Transformer):
 					raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
 		if score is None:
 			raise CordeliaDeductionError(f"phrase '{name}' has no score")
-		return Instrument(name=name, qualities=score.items, modifiers=modifiers, instr_id=instr_id)
+		return Instrument(name=name, qualities=score.items, modifiers=modifiers, name_id=name_id)
+
+_transformer = CordeliaTransformer()
+def transform(chunks: list) -> list:
+   return [_transformer.transform(chunk) for chunk in chunks]

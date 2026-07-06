@@ -4,7 +4,7 @@ from lark import Tree
 from lark.exceptions import UnexpectedInput
 from cordelia.pipeline.parser import parse, parse_raw
 from cordelia.console import console
-from cordelia.pipeline.processor.run import process
+from archive.processor.run import process
 from cordelia.pipeline.transformer import Instrument, Quality, Variable, Array, Func
 import cordelia.session.instrument_tracker as instrument_tracker
 

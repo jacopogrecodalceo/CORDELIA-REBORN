@@ -1,12 +1,10 @@
-from __future__ import annotations
+from dataclasses import dataclass
 import importlib
 from typing import Any
 from loguru import logger
 
 import cordelia.path
-from cordelia.models.transformers import Quality, Instrument
-from cordelia.models.score import *
-
+from cordelia.models.ast import Quality, Instrument
 
 class CordeliaDeductionError(Exception):
    pass
@@ -25,8 +23,8 @@ def register(category: str, name: str, module: Any):
       _registry[category] = {}
    _registry[category][name] = module
    
-def load():
-   for path in cordelia.path.score.rglob("*.py"):
+def load_qualities():
+   for path in cordelia.path.score_corpus_dir.rglob("*.py"):
       if path.stem.startswith("_"):
          continue
 
@@ -48,8 +46,11 @@ def load():
       logger.debug(f"SCORE | registry: {k}: {list(v.keys())}")
 
 
-
 # ─── DEDUCTION ───────────────────────────────────────────────────────────────
+@dataclass
+class Argument:
+   instrument: Instrument
+   quality: Quality
 
 def deduce_quality(quality: Quality, instrument: Instrument):
    for category, plugins in _registry.items():
@@ -61,8 +62,8 @@ def deduce_quality(quality: Quality, instrument: Instrument):
                raise CordeliaDeductionError(
                   f"plugin {category}/{name} has no function '{name}'"
                )
-            return fn(quality, instrument)
-
+            fn(Argument(instrument, quality))
+            return True
    raise CordeliaDeductionError(
       f"no plugin matched quality: {quality.items}"
    )

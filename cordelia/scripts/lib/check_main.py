@@ -1,5 +1,5 @@
 from loguru import logger
-from cordelia.pipeline.processor.instrument.score import load, _registry
+from archive.processor.instrument.score import load, _registry
 load()
 
 for category, plugins in _registry.items():

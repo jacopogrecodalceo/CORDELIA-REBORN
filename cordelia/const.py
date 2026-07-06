@@ -13,7 +13,7 @@ year = calculate_cordelia_age()['years']
 DATE = datetime.today().strftime(f'{year}%m%d-%H%M')
 
 OUTPUT_SCORE_NAME = f'cor{DATE}'
-OUTPUT_SCORE_PATH = cordelia.path.score / OUTPUT_SCORE_NAME
+OUTPUT_SCORE_PATH = cordelia.path.main_dir / 'score' / OUTPUT_SCORE_NAME
 
 QUERY_UDP_WHILE_SLEEP_TIME = 1/8
 QUERY_CSOUND_WHILE_SLEEP_TIME = 1/12 #the sleep time in the main while loop
@@ -48,7 +48,8 @@ jinja_env = Environment(
 
 data = {
 	f.stem: orjson.loads(f.read_bytes())
-	for f in cordelia.path.json.glob("*.json")
+	for f in cordelia.path.corpus_json_dir.glob("*.json")
 }
 
-data_to_know = {k: v for k, v in data.items() if k not in {'dyn', 'dur', 'mode'}}
+def csound_comment_line(string):
+	return f';' + string + '·'*128

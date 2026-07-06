@@ -25,10 +25,9 @@ import ctcsound
 
 from loguru import logger
 
-import cordelia.pipeline.processor.instrument.score
-import cordelia.pipeline.processor.run
-import cordelia.pipeline.post_processor
-import cordelia.csound_conversion.instrument_class
+import archive.processor.instrument.score
+import archive.processor.run
+import archive.post_processor
 import cordelia.registry
 
 from cordelia.csound.run import build_orchestra, init
@@ -81,13 +80,13 @@ def _udp_thread_fn(worker: UDPWorker) -> None:
 			units = parse(msg)
 			for u in units:
 				logger.debug(f"STARTING PROCESS: {u}")
-				cordelia.pipeline.processor.run.process(u)
+				archive.processor.run.process(u)
 				logger.debug(f"STARTING POST PROCESS: {u}")
-				cordelia.pipeline.post_processor.run(u)
+				archive.post_processor.run(u)
 				logger.debug(f"STARTING CONVERSION: {u}")
 				cordelia.csound_conversion.instrument_class.convert(u)
 		except Exception as e:
-			logger.error(f"udp | pipeline error: {e}")
+			logger.exception(f"udp | pipeline error: {e}")
 
 
 def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThread) -> None:
@@ -118,7 +117,7 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 
 def main() -> None:
 
-	cordelia.pipeline.processor.instrument.score.load()
+	archive.processor.instrument.score.load()
 
 	cs, pt = _build_csound()
 

@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 from lark import Tree
 from lark.exceptions import UnexpectedInput
-from cordelia.pipeline.parser import parse, parse_raw
+from cordelia.pipeline.parser import parse
 from cordelia.console import console
 
 from cordelia.pipeline.transformer import Instrument, Quality, Variable, Array, Func
@@ -18,7 +18,7 @@ def test_simple_raw():
 	code = r"""
 @cordelia·talea {1 2 3} 16 in 8
 """
-	trees = parse_raw(code)
+	trees = parse(code)
 	console.print(f"\nTREES: {len(trees)}")
 	for t in trees:
 		console.print(t)
@@ -35,7 +35,6 @@ def test_simple():
 		console.print(t)
 	assert len(units) == 1
 	assert isinstance(units[0], Instrument)
-	instrument = units[0]
 
 def test_check_quality():
 	code = r"""

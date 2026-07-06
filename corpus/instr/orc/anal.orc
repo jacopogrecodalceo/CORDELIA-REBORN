@@ -3,9 +3,9 @@
 imode		init 16
 inyx		init .25
 
-kpw			abs jitter(1, gkbeatf/4, gkbeatf)
-kphs		abs jitter(1, gkbeatf/4, gkbeatf)
-kndx		samphold jitter(1, gkbeatf/4, gkbeatf), metro:k(gkbeatf*8)
+kpw			abs jitter(1, gkBEATf/4, gkBEATf)
+kphs		abs jitter(1, gkBEATf/4, gkBEATf)
+kndx		samphold jitter(1, gkBEATf/4, gkBEATf), metro:k(gkBEATf*8)
 kvibf		= lfo(icps/100, random:i(2.5, 4.5))
 
 ivibdiv		random 4, 8

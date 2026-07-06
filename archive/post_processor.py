@@ -1,6 +1,7 @@
+from abjad import score
 from loguru import logger
 from cordelia.console import console
-from cordelia.models.transformers import Array
+from cordelia.models.ast import Array
 from cordelia.pipeline.transformer import Instrument, Variable
 from cordelia.const import data_to_know
 from cordelia.registry import orchestra_manager
@@ -21,7 +22,6 @@ def load_known_instrument_qualities(instrument: Instrument):
 		for entry in token_list
 		for token in (entry.items if isinstance(entry, Array) else [entry])
 	)
-
 	for token in score_tokens:
 		for quality_name, keyword_path_map in data_to_know.items():
 			if token in keyword_path_map:

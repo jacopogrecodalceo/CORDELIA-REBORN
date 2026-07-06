@@ -4,7 +4,7 @@ import ctcsound
 from cordelia.console import console
 import cordelia.path
 from config.options import CHANNELs, flags
-from cordelia.const import CSOUND_DEVICEs, SHORT_REST_AFTER_INIT
+from cordelia.const import FTGEN_SIZE, CSOUND_DEVICEs
 
 from cordelia.csound.helpers import organise_devs
 
@@ -58,18 +58,23 @@ def init():
 def build_orchestra():
 	orcs = [
 		"; BEGIN CORDELIA SETTINGS",
+  
 		f"ginchnls init {CHANNELs}",
 		"gioffch init 0",
 		"gimainclock_ch init 0",
 		"giquarterclock_ch init 0",
 		"giINSTR_CLEAR_COUNT init 0",
+		f"giFTGEN_SIZE init {FTGEN_SIZE}",
+  
 		"; END CORDELIA SETTINGS",
+  
 		"",
-		";"+"-"*64,
+  
+		";"+"·"*64,
 		"; BEGIN INCLUDES",
 		cordelia.path.include.read_text(),
 		"; END INCLUDES",
-		";"+"-"*64,
+		";"+"·"*64,
 	]
 
 	return "\n".join(orcs)

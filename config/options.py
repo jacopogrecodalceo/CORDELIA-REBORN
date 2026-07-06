@@ -1,4 +1,3 @@
-import cordelia.const
 
 CHANNELs = 2
 SR = 48000
@@ -16,9 +15,10 @@ flags = [
    f'--sample-rate={SR}',
    '--format=24bit',
    f'--ksmps={KSMPS}',
+
    '--0dbfs=1',
 
-   '-d', # HIDE ASCII TABLE
+   '-d', # hide ftgen ascii tables
  
    '--m-amps=1',
    '--m-range=1',
@@ -27,7 +27,7 @@ flags = [
    '--m-colours=1',
    '--m-benchmarks=0',
    
-   '-m2', #rtevent
+   '-m2', # hide rtevent
    
    "-+id_artist=jacopo greco d'alceo",
 ]

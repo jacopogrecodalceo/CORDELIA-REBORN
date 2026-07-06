@@ -18,8 +18,9 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
+@auto_config(Colores)
+def main(args):
+	items = args.quality.items
 
 	mode = items[0]
 
@@ -39,4 +40,5 @@ def main(quality: Quality, instrument: Instrument):
 
 	mode_degrees = cordelia.const.data['mode'][mode]
 	mode_len = len(mode_degrees)
-	instrument.score['colores'] = [mode_degrees[(int(d)-1 if int(d) != 0 else 1)%mode_len] for d in degrees]
+	res = [mode_degrees[(int(d)-1 if int(d) != 0 else 1)%mode_len] for d in degrees]
+	return res

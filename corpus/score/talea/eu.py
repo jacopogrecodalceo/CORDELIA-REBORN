@@ -18,12 +18,13 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
+@auto_config(Cycle, Talea)
+def main(args):
+	items = args.quality.items
 
 	args = items[1:]
 	if 'in' in args:
-		instrument.cycle = int(args[-1])
+		cycle = int(args[-1])
 		args = args[:-2]
 
 	pulses = int(args[0])
@@ -33,17 +34,7 @@ def main(quality: Quality, instrument: Instrument):
 	if len(args) == 3:
 		shift = int(args[2])
 
-	instrument.score['talea'] = _bjorklund(pulses, steps, shift=shift)
-
-# ─── internal ────────────────────────────────────────────────────────────────
-
-def _is_int(val) -> bool:
-	try:
-		int(str(val))
-		return True
-	except ValueError:
-		return False
-
+	return cycle, _bjorklund(pulses, steps, shift=shift)
 
 def _bjorklund(pulses: int, steps: int, shift: int = 0) -> list[int]:
 	if not 0 <= pulses <= steps:

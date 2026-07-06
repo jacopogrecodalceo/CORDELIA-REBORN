@@ -10,7 +10,7 @@ RETURNS
 -------
 	Talea(pattern=[1,0,0,1,0,0,1,0], cycle=8)
 """
-from corpus.score.dyn import *
+from corpus.score.dur import *
 import cordelia.const
 
 def match(items: list) -> bool:
@@ -18,10 +18,11 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-def main(quality: Quality, instrument: Instrument):
-	items = quality.items
+@auto_config(Dur)
+def main(args):
+	items = args.quality.items
 	validate(items)
-	instrument.score['dur'] = items
+	return items
 
 def validate(items: list) -> bool:
 	for i in set(items):

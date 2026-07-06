@@ -1,16 +1,27 @@
 %import common.NEWLINE
 %import common.WS_INLINE
 
-%ignore /;[^\n]*/
-%ignore /;@[\s\S]*?$/
+// ─────────────────────────────────────────────
+// TOKENS
+// ─────────────────────────────────────────────
+
+NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+NUMBER: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
+
+// SPECIAL CHAR
+NOTE: /[a-g](?:\.+|'+)?/
+ALEA: /\d+\?/
+DEGREE: /\d+(M|m|d|a)/
+REPEAT: /x\d+|\d+x\d+/
 
 _NL:    NEWLINE
 _DELIM: "·" | "|"
 _SEP: WS_INLINE
 
+SYM: /\+|\-|\*|\/|<|>|=|\./
+
 // ─── HEADER ──────────────────────────────────────────────────────────────────
-id: "#" NUMBER
-header: "@" NAME id*
+header: "@" NAME ("#" NUMBER)?
 
 // ─── ENTRY ───────────────────────────────────────────────────────────────────
 
@@ -18,37 +29,40 @@ header: "@" NAME id*
 
 // ─── STATEMENT ───────────────────────────────────────────────────────────────
 
-statement: header _SEP atom+ (_SEP atom+)*
+statement: header _SEP term (SYM term)* (_SEP term (SYM term)*)*
 
 // ─── PHRASE ──────────────────────────────────────────────────────────────────
 
 phrase:  header modifier* _SEP* score
 score: ((_DELIM | _NL) _SEP* quality _SEP*)+
-quality: _SEP* atom+ (_SEP atom+)*
+quality: _SEP* term (SYM term)* (_SEP term (SYM term)*)*
+// ─────────────────────────────────────────────
+// MODIFIERS
+// ─────────────────────────────────────────────
 
-// ─── MODIFIERS ───────────────────────────────────────────────────────────────
+modifier: _NL* (serial | parallel)
 
-modifier: _NL* (dot_mod | colon_mod)
+serial:   "." NAME array? ("{}"|"()")?
+parallel: ":" NAME array? ("{}"|"()")?
 
-dot_mod:   "." NAME array?
-colon_mod: ":" NAME array?
+// ─────────────────────────────────────────────
+// STRUCTURES
+// ─────────────────────────────────────────────
 
-// ─── ARRAYS ──────────────────────────────────────────────────────────────────
+array: "(" _SEP* term (SYM term)* (_SEP+ term (SYM term)*)* _SEP* ")"
+     | "{" _SEP* term (SYM term)* (_SEP+ term (SYM term)*)* _SEP* "}"
 
-array: "(" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* ")"
-     | "{" _SEP* (atom+ (_SEP+ atom+)*)? _SEP* "}"
+func: NAME array
 
-// ─── ATOM ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// term (SYM term)*ESSION SYSTEM (THIS IS THE KEY FIX)
+// ─────────────────────────────────────────────
 
-atom: NAME array -> func
-    | array
-    | NAME
-    | NUMBER
-    | SYM
-
-// ─── TOKENS ──────────────────────────────────────────────────────────────────
-
-NAME.3:   /[a-zA-Z_][a-zA-Z0-9_]*/
-NUMBER.2: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
-//SYM.1: /[^\s·|@:{}\(\){}\na-zA-Z0-9_\n]+/
-SYM.1: /[^\s·|@:{}\(\){}a-zA-Z0-9_\n]+/
+?term: func
+     | array
+     | NOTE
+     | NUMBER
+     | NAME
+     | ALEA
+     | REPEAT
+     | DEGREE

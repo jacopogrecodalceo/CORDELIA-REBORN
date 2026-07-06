@@ -193,7 +193,7 @@ class Staff:
 		self.dirty = False
 		self.born = True
 		self.channel = 0
-		self.params = ['talea', 'colores', 'dur', 'dyn', 'env', 'space']
+		self.params = ['cycle', 'talea', 'colores', 'dur', 'dyn', 'env', 'space']
 
 		if not dur:
 
@@ -274,7 +274,7 @@ k{param_name} table k{param_name}_idx, gi{self.instr_id}_{param_name}"""
 		count_vars = []
 		
 		for p in self.params:
-			if p != 'talea':
+			if p not in ['talea', 'cycle']:
 					ftgen, table = param_lines(p)
 					ftgens.append(ftgen)
 					tables.append(table)
@@ -283,7 +283,7 @@ k{param_name} table k{param_name}_idx, gi{self.instr_id}_{param_name}"""
 		# === Build the instrument ===
 		instr_template = f"""
 	; --- Staff {self.instr_id} ---
-	gk{self.instr_id}_dur init {self.staff_dur}
+	gi{self.instr_id}_cycle ftgen {self.cycle_ft_num}, 0, {FTGEN_SIZE}, -2, {64}, {", ".join(map(str, [self.staff_dur for x in range(64)]))}
 	gi{self.instr_id}_talea ftgen {self.talea_ft_num}, 0, {FTGEN_SIZE}, -2, {len(self.talea)}, {", ".join(map(str, self.talea))}
 
 	{chr(10).join(ftgens)}
@@ -294,7 +294,10 @@ k{param_name} table k{param_name}_idx, gi{self.instr_id}_{param_name}"""
 		kinit_flag init 1
 		
 		kmain chnget "main_phase"
-		kphase = (kmain * gk{self.instr_id}_dur) % 1
+		kcycle table kmain*64, gi{self.instr_id}_cycle
+
+		printk2 kcycle
+		kphase = (kmain * kcycle) % 1
 		ktalea_len = {len(self.talea)}
 		ktalea_idx = int(kphase * ktalea_len) + 1
 		ktalea table ktalea_idx, gi{self.instr_id}_talea
@@ -311,11 +314,11 @@ k{param_name} table k{param_name}_idx, gi{self.instr_id}_{param_name}"""
 			if kspace == 0 then
 					kch = 1
 					until kch > nchnls do
-						schedulek "{self.instrument}", 0, kdur * gkbeats * gk{self.instr_id}_dur / gkdiv, kdyn, kenv, kcolores, kch
+						schedulek "{self.instrument}", 0, kdur * gkbeats * kcycle / gkdiv, kdyn, kenv, kcolores, kch
 						kch += 1
 					od
 			else
-					schedulek "{self.instrument}", 0, kdur * gkbeats * gk{self.instr_id}_dur / gkdiv, kdyn, kenv, kcolores, kspace
+					schedulek "{self.instrument}", 0, kdur * gkbeats * kcycle / gkdiv, kdyn, kenv, kcolores, kspace
 			endif
 			
 			{chr(10).join([f'{v} += 1' for v in count_vars])}

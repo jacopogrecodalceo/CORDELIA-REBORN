@@ -159,3 +159,26 @@ DISPATCHER
 routes to the right function
 taleae/eu.py, taleae/talea.py...
 
+//
+
+cordelia/
+├── pipeline/                 # core — never references corpus contents by name
+│   ├── lexer.py              # (unchanged) splits on @
+│   ├── parser.py             # (unchanged) Lark grammar → CST
+│   ├── ast_builder.py        # was models/transformers.py — CordeliaTransformer lives here
+│   ├── normalizer.py         # was pipeline/visitor.py — expands x2-style shorthand
+│   ├── resolver.py           # was pipeline/processor/ — binds names to corpus via registry.py
+│   ├── evaluator.py          # was pipeline/post_processor.py — cross-quality context
+│   └── emitter.py            # was csound_conversion/ — builds the Csound instrument text
+├── registry.py                # the one gate core uses to query corpus — keep as is
+├── runtime/                    # was session/ — live/runtime concerns, not compile-time
+│   ├── instrument_tracker.py
+│   └── orchestra_manager.py
+├── csound/                     # Csound process + macro handling — separate from emitter
+├── cli.py / console.py / udp.py
+corpus/
+├── instruments/                # was instr/
+├── modifiers/                  # was mod/
+├── qualities/                  # was score/ — talea, colores, dur, dyn, env, space, character
+├── tunings/                    # was scala/
+├── manifests/                  # was _json/ — one JSON per plugin family
