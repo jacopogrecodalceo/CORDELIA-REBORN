@@ -23,7 +23,7 @@ def register(category: str, name: str, module: Any):
       _registry[category] = {}
    _registry[category][name] = module
    
-def load_qualities():
+def load_qualities_from_corpus():
    for path in cordelia.path.score_corpus_dir.rglob("*.py"):
       if path.stem.startswith("_"):
          continue

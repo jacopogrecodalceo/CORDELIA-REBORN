@@ -28,7 +28,9 @@ aout buthp aout, 20
 #define CORDELIA_ENV #
 aout *= envgen(idur_var, ienv)
 #
-#define CORDELIA_OUT #chnmix aout, sprintf("%s_%i", Sinstr, ich)#
+#define CORDELIA_OUT #
+chnmix aout, sprintf("%s_%i", Sinstr, ich)
+#
 
 #define CORDELIA_END_INSTR #
 	$CORDELIA_ENV

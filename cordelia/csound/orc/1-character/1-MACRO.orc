@@ -19,11 +19,20 @@ gidyn_var init 1
 ; variation selected in each instrument [0 - 1]
 gidur_var init 0
 #define dur_var(dur_var_ratio) #
-
+idur_var init (idur-(random:i(0, idur*(1 - 1/$dur_var_ratio))*gidur_var))
 #
 
 ;INSTRUMENT MACROs
 #define params(instr_name) #
+Sinstr	init "$instr_name"
+idur		init abs(p3)
+idyn		init p4
+ienv		init p5
+icps		init p6
+ich		init p7
+#
+
+#define CORDELIA_QUALITIEs(instr_name) #
 Sinstr	init "$instr_name"
 idur		init abs(p3)
 idyn		init p4
@@ -42,13 +51,26 @@ od
 	instr $start_instr_name
 	$params($start_instr_name)
 #
+
+#define CORDELIA_BEGIN_INSTR(instr_name) #
+	instr $instr_name
+	$CORDELIA_QUALITIEs($instr_name)
+#
 #define env_gen #aout *= envgen(idur_var, ienv)#
+#define CORDELIA_ENV #aout *= envgen(idur_var, ienv)#
 
 #define channel_mix #chnmix aout, sprintf("%s_%i", Sinstr, ich)#
+#define CORDELIA_OUT #chnmix aout, sprintf("%s_%i", Sinstr, ich)#
 
 #define end_instr #
 	$env_gen
 	$channel_mix
+	endin
+#
+
+#define CORDELIA_END_INSTR #
+	$CORDELIA_ENV
+	$CORDELIA_OUT
 	endin
 #
 

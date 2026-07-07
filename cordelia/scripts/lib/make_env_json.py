@@ -3,8 +3,8 @@ from pathlib import Path
 from cordelia.console import console
 import cordelia.path
 
-INPUT_DIR = Path(cordelia.path.corpus / 'env')
-OUTPUT_JSON = cordelia.path.corpus / '_json' / 'fts.json'  # Changed: use / operator
+INPUT_DIR = cordelia.path.env_corpus_dir
+OUTPUT_JSON = cordelia.path.env_corpus_json
 
 instrs = {}
 for path in INPUT_DIR.rglob("*.orc"):

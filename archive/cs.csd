@@ -52,7 +52,7 @@ gkdiv		init 64 ;max division of main tempo for heart and lungs
 
 ;	HEART
 ;	tempo for heart
-gkpulse 	init 120
+gkpulse 	init 60
 gkBEATf		init i(gkpulse) / 60
 gkBEATs		init 1 / (i(gkpulse) / 60)
 
@@ -102,7 +102,7 @@ gkabstime	times
 
 
 	endin
-	schedule("heart", .5, -1)
+	schedule("heart", 1, -1)
 ;	alwayson("heart")
 
 
@@ -142,12 +142,7 @@ gibeatms = i(gkBEATms)
 gibeatf = i(gkBEATf)
 itun = i(gktuning)
 prints("\n────────── heartbeat signal ──────────\n")
-prints("   ☀️ BPM : %.02f\n", gipulse)
-prints("   ⏱  BEATS: %.02f s\n", gibeats)
-prints("   🌐 FREQ : %.02f Hz\n", gibeatf)
-prints("   🎚  TUNE : %.02f\n", itun)
-prints("--------------------------------------\n")
-        turnoff
+	turnoff
 	endin
 
 
@@ -156,10 +151,8 @@ prints("--------------------------------------\n")
 #include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/3-body/4-ADDONs.orc"
 #include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/2-head/envgen.orc"
 
-
-
-;BEGIN ORC | 02·34pm································································································································
-schedule "heart", 0, -1
+;BEGIN ORC | 09·35pm································································································································
+schedule "heart", 1, -1
 ;       cls
 ;       a 3-points function from linear segments
 gicls_atk               init sr * .005
@@ -176,117 +169,138 @@ gicls           ftgen   0, 0, gienvdur, 7, 0, gicls_atk, 1, gicls_dur*gicls_dec,
 
 
 
-;INSTRUMENT repuck LOADED································································································································
-                $start_instr(repuck)
+/* 
+~idi di luglio 2026
+coming from another synth icreated working on cordelia reborn
+è rimasto nel cuore, come argilla secca sugli scogli
+*/
 
-ipanfreq        init random:i(-.25, .25)
+	instr tiny
+idur init p3
+idyn init p4
+ienv init p5
+icps init p6
+ich init p7
 
-aout    repluck random:i(.015, .35), $dyn_var, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3(1, random:i(.05, .25),  gisine)
+irel init idur+random(.005, -.005)
+	xtratim irel
 
-aout    buthp aout, icps - icps/12
-        outall aout*cosseg:a(1, idur, 0)
-                $dur_var(10)
-                $end_instr
+anoi fractalnoise 1/12+random(0, .005), 1
+aosc oscil3 .5+random(-.005, .005), icps
+avco vco2 1/64+random(0, .005), icps
 
+aout sum aosc, anoi*cosseg(1, .005+random(.0095, .005), 0), avco
+aout = aout * (.5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005)))
 
-; ── INSTRUMENT repuck_1 BIRTH ────────────────────────────
-gkrepuck_1_cycle init 4
+aenv cossegr 0, .005, 1, idur - .005, random(1/8, 1/24), irel, 0
+aout *= aenv
+	outch ich, aout/2*idyn
+	endin
 
-girepuck_1_talea ftgen 1001, 0, giFTGEN_SIZE, -2, 8, 0, 1, 0, 2, 0, 0, 3, 0
-girepuck_1_colores ftgen 1002, 0, giFTGEN_SIZE, -2, 2, 300, 500
-girepuck_1_dur ftgen 1003, 0, giFTGEN_SIZE, -2, 3, 24, 36, 36
-girepuck_1_dyn ftgen 1004, 0, giFTGEN_SIZE, -2, 1, $mf
-girepuck_1_env ftgen 1005, 0, giFTGEN_SIZE, -2, 1, gicls
-girepuck_1_space ftgen 1006, 0, giFTGEN_SIZE, -2, 1, 0
+;BEGIN ORC | 09·52pm································································································································
+; ── INSTRUMENT tiny_1 BIRTH ────────────────────────────
 
-gkrepuck_1_talea_count init -1
-gkrepuck_1_colores_count init -1
-gkrepuck_1_dur_count init -1
-gkrepuck_1_dyn_count init -1
-gkrepuck_1_env_count init -1
-gkrepuck_1_space_count init -1
+gitiny_1_cycle ftgen 1007, 0, giFTGEN_SIZE, -2, 2, \
+																	8, 4
 
-        instr repuck_1
-ktalea_last init -1
-kinit_flag  init 1
+gitiny_1_talea ftgen 1001, 0, giFTGEN_SIZE, -2, 16, \
+																	1, 2, 3, 0, 4, 0, 5, 0, \
+																	6, 7, 8, 0, 9, 0, 10, 0
+gitiny_1_colores ftgen 1002, 0, giFTGEN_SIZE, -2, 5, 300, 400, 500, 600, 700
+gitiny_1_dur ftgen 1003, 0, giFTGEN_SIZE, -2, 8, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0
+gitiny_1_dyn ftgen 1004, 0, giFTGEN_SIZE, -2, 1, $mf
+gitiny_1_env ftgen 1005, 0, giFTGEN_SIZE, -2, 1, gicls
+gitiny_1_space ftgen 1006, 0, giFTGEN_SIZE, -2, 1, 0
+;gitiny_1_cycle ftgen 1007, 0, giFTGEN_SIZE, -2, 6, 8, 8, 8, 8, 4, 4
 
-kcycle_reset init 1
-kmain   chnget "heart"
+gktiny_1_colores_count init -1
+gktiny_1_dur_count init -1
+gktiny_1_dyn_count init -1
+gktiny_1_env_count init -1
+gktiny_1_space_count init -1
 
-if kmain < kcycle_reset then
-        kcycle_reset = -1
+gktiny_1_count init -1
+
+	instr tiny_1
+
+ktalea_prev	init -1
+kinit_flag	init 1
+
+kmain	chnget "heart"
+
+kcycle_idx	init 1
+
+kphase_prev	init 0
+
+kcycle_len	table 0, gitiny_1_cycle
+kcycle	table kcycle_idx%kcycle_len, gitiny_1_cycle
+kphase	= (kmain * gkdiv / kcycle) % 1
+if kphase < kphase_prev then
+	kcycle_idx += 1
 endif
-kphase  = (kmain * gkrepuck_1_cycle) % 1
+kcycle	table kcycle_idx%kcycle_len, gitiny_1_cycle
+kphase	= (kmain * gkdiv / kcycle) % 1
 
-ktalea_len      table 0, girepuck_1_talea
-ktalea_idx      = floor(kphase * ktalea_len) + 1
-ktalea          table ktalea_idx, girepuck_1_talea
+ktalea_len  table 0, gitiny_1_talea
+ktalea_idx = int(kphase * ktalea_len) + 1
+ktalea  table ktalea_idx, gitiny_1_talea
 
-if ktalea > 0 && ktalea != ktalea_last then
-        if kinit_flag == 1 then
-                kcycle_reset = kmain
-                gkrepuck_1_talea_count = ktalea - 1
-                gkrepuck_1_colores_count = ktalea - 1
-                gkrepuck_1_dur_count = ktalea - 1
-                gkrepuck_1_dyn_count = ktalea - 1
-                gkrepuck_1_env_count = ktalea - 1
-                gkrepuck_1_space_count = ktalea - 1
-                kinit_flag = 0
-        endif
+printks2 sprintfk("····· talea: %i | ndx: %i |\n", ktalea, ktalea_idx), kphase
 
-        printf "talea:%09f, last: %09f\n", random:k(1, 2), ktalea, ktalea_last
 
-        ; ··· talea
-        ; ··· colores
-        kcolores_len  table 0, girepuck_1_colores
-        kcolores_idx  = (gkrepuck_1_colores_count % kcolores_len) + 1
-        kcolores      table kcolores_idx, girepuck_1_colores
-        ; ··· dur
-        kdur_len  table 0, girepuck_1_dur
-        kdur_idx  = (gkrepuck_1_dur_count % kdur_len) + 1
-        kdur      table kdur_idx, girepuck_1_dur
-        ; ··· dyn
-        kdyn_len  table 0, girepuck_1_dyn
-        kdyn_idx  = (gkrepuck_1_dyn_count % kdyn_len) + 1
-        kdyn      table kdyn_idx, girepuck_1_dyn
-        ; ··· env
-        kenv_len  table 0, girepuck_1_env
-        kenv_idx  = (gkrepuck_1_env_count % kenv_len) + 1
-        kenv      table kenv_idx, girepuck_1_env
-        ; ··· space
-        kspace_len  table 0, girepuck_1_space
-        kspace_idx  = (gkrepuck_1_space_count % kspace_len) + 1
-        kspace      table kspace_idx, girepuck_1_space
+if ktalea > 0 && ktalea != ktalea_prev then
+	if kinit_flag == 1 then
+		gktiny_1_colores_count = ktalea - 1
+		gktiny_1_dur_count = ktalea - 1
+		gktiny_1_dyn_count = ktalea - 1
+		gktiny_1_env_count = ktalea - 1
+		gktiny_1_space_count = ktalea - 1
+		kinit_flag = 0
+	endif
 
-        ; ── schedule events ──────────────────────────────────────
-        if kspace == 0 then
-                kch = 1
-                until kch > ginchnls do
-                        schedulek "repuck", 0, kdur * gkBEATs * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kch
-                        kch += 1
-                od
-        else
-                schedulek "repuck", 0, kdur * gkBEATs * gkrepuck_1_cycle / gkdiv, kdyn, kenv, kcolores, kspace
-        endif
+	; ··· colores
+	kcolores_len  table 0, gitiny_1_colores
+	kcolores_idx  = (gktiny_1_colores_count % kcolores_len) + 1
+	kcolores      table kcolores_idx, gitiny_1_colores
+	; ··· dur
+	kdur_len  table 0, gitiny_1_dur
+	kdur_idx  = (gktiny_1_dur_count % kdur_len) + 1
+	kdur      table kdur_idx, gitiny_1_dur
+	; ··· dyn
+	kdyn_len  table 0, gitiny_1_dyn
+	kdyn_idx  = (gktiny_1_dyn_count % kdyn_len) + 1
+	kdyn      table kdyn_idx, gitiny_1_dyn
+	; ··· env
+	kenv_len  table 0, gitiny_1_env
+	kenv_idx  = (gktiny_1_env_count % kenv_len) + 1
+	kenv      table kenv_idx, gitiny_1_env
+	; ··· space
+	kspace_len  table 0, gitiny_1_space
+	kspace_idx  = (gktiny_1_space_count % kspace_len) + 1
+	kspace      table kspace_idx, gitiny_1_space
 
-        gkrepuck_1_talea_count += 1
-        gkrepuck_1_colores_count += 1
-        gkrepuck_1_dur_count += 1
-        gkrepuck_1_dyn_count += 1
-        gkrepuck_1_env_count += 1
-        gkrepuck_1_space_count += 1
+	; ── schedule events ──────────────────────────────────────
+	if kspace == 0 then
+		kch = 1
+		until kch > ginchnls do
+			schedulek "tiny", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolores, kch
+			kch += 1
+		od
+	else
+		schedulek "tiny", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolores, kspace
+	endif
 
-        ktalea_last = ktalea
-        if kcycle_reset == -1 then
-                ktalea_last = -1
-        endif
+	gktiny_1_colores_count += 1
+	gktiny_1_dur_count += 1
+	gktiny_1_dyn_count += 1
+	gktiny_1_env_count += 1
+	gktiny_1_space_count += 1
+	ktalea_prev = ktalea
 endif
-        endin
-
-schedule "repuck_1", 0, -1
-;END ORC | 02·34pm································································································································
-
-
+	kphase_prev	= kphase
+	endin
+	schedule "tiny_1", 1, -1
+;END ORC | 09·52pm································································································································
 
 
 </CsInstruments>

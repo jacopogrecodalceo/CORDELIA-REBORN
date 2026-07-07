@@ -14,7 +14,7 @@ from corpus.score.env import *
 import cordelia.const
 
 def match(items: list) -> bool:
-	if items[0] in cordelia.const.data['ft']:
+	if items[0] in cordelia.const.data['env']:
 		return True
 	return False
 
@@ -27,5 +27,5 @@ def main(args):
 
 def validate(items: list) -> bool:
 	for i in set(items):
-		if i not in cordelia.const.data['ft']:
+		if i not in cordelia.const.data['env']:
 			raise ValueError(f"{i} does not belong to fts!!")

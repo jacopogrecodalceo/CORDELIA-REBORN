@@ -25,13 +25,12 @@ import ctcsound
 
 from loguru import logger
 
-import archive.processor.instrument.score
-import archive.processor.run
-import archive.post_processor
-import cordelia.registry
-
+from cordelia.pipeline.deducer import load_qualities_from_corpus
 from cordelia.csound.run import build_orchestra, init
 from cordelia.pipeline.parser import parse
+from cordelia.pipeline.transformer import transform
+from cordelia.pipeline.resolver import resolve
+from cordelia.pipeline.converter import convert
 from cordelia.udp import UDPRouter, UDPWorker
 from cordelia.console import console
 from cordelia.const import (
@@ -40,6 +39,7 @@ from cordelia.const import (
 	QUERY_UDP_WHILE_SLEEP_TIME,
 )
 from config.options import flags
+from cordelia.runtime import stop_event, orc_queue, session_units
 
 
 # ─── CSOUND ───────────────────────────────────────────────────────────────────
@@ -63,6 +63,7 @@ def _build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
 # ─── THREADS ──────────────────────────────────────────────────────────────────
 
 def _udp_thread_fn(worker: UDPWorker) -> None:
+	global session_units
 	"""
 	blocking UDP listener.
 	parses incoming messages, runs the full pipeline.
@@ -70,21 +71,52 @@ def _udp_thread_fn(worker: UDPWorker) -> None:
 	never touches csound directly.
 	"""
 	logger.info("udp | listening")
-	while not cordelia.registry.stop_event.is_set():
-		item = worker.get(timeout=0.5)
+	while not stop_event.is_set():
+		item = worker.get(timeout=.5)
 		if not item:
 			continue
 		direction, msg = item
 		logger.debug(f"udp | {direction} | {msg!r}")
 		try:
-			units = parse(msg)
-			for u in units:
-				logger.debug(f"STARTING PROCESS: {u}")
-				archive.processor.run.process(u)
-				logger.debug(f"STARTING POST PROCESS: {u}")
-				archive.post_processor.run(u)
-				logger.debug(f"STARTING CONVERSION: {u}")
-				cordelia.csound_conversion.instrument_class.convert(u)
+			current_units = dict()
+			temp_units = list()
+			parsed_units = parse(msg)
+			trees = transform(parsed_units)
+			for unit in trees:
+				logger.debug(f"BEGIN PROCESS: {unit}")
+				resolve(unit)
+				unit.score.process()
+				current_units[unit.uid] = unit
+
+			# compare units
+			init_units = current_units.keys() - session_units.keys()
+			release_units = session_units.keys() - current_units.keys()
+			common_units = current_units.keys() & session_units.keys()
+
+			for k in init_units:
+				current_units[k].state = 'init'
+				temp_units.append(current_units[k])
+				session_units[k] = current_units[k]
+
+			for k in release_units:
+				session_units[k].state = 'release'
+				temp_units.append(session_units[k])
+				del session_units[k]
+    
+			for k in common_units:
+				if current_units[k] != session_units[k]:
+					current_units[k].state = 'patched'
+					current_units[k].is_playing_instr = session_units[k]
+					temp_units.append(current_units[k])
+
+				else:
+					current_units[k].state = 'unpatched'
+					current_units[k].is_playing_instr = session_units[k]
+					temp_units.append(current_units[k])
+
+			convert(temp_units)
+
+
 		except Exception as e:
 			logger.exception(f"udp | pipeline error: {e}")
 
@@ -95,9 +127,9 @@ def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThre
 	flushes OrchestraManager queues and sends compiled orc to csound.
 	"""
 	logger.info("scheduler | ready")
-	while not cordelia.registry.stop_event.is_set():
-		if cordelia.registry.orchestra_manager.filled:
-			orc = cordelia.registry.orchestra_manager.flush()
+	while not stop_event.is_set():
+		if orc_queue.filled:
+			orc = orc_queue.flush()
 			logger.debug(f"scheduler | compiling orc block")
 			console.print(orc)
 			cs.compileOrcAsync(orc)
@@ -110,14 +142,14 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 	"""
 	pt.join()
 	logger.info("csound stopped — triggering shutdown")
-	cordelia.registry.stop_event.set()
+	stop_event.set()
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
 
-	archive.processor.instrument.score.load()
+	load_qualities_from_corpus()
 
 	cs, pt = _build_csound()
 
@@ -135,11 +167,11 @@ def main() -> None:
 
 	def _shutdown(sig, frame) -> None:
 		logger.info("shutdown | signal received")
-		cordelia.registry.stop_event.set()
+		stop_event.set()
 
 	signal.signal(signal.SIGINT, _shutdown)
 
-	while not cordelia.registry.stop_event.is_set():
+	while not stop_event.is_set():
 		time.sleep(1/8)
 
 	logger.info("shutdown | cleaning up")

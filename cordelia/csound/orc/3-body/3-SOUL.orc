@@ -89,6 +89,7 @@ arec	chngeta Sinstrs
 Sinstr	strget	p4
 prints "%s is clear\n", Sinstr
 	chnclear Sinstr
+	xtratim giXTRATIM
 	endin
 
 

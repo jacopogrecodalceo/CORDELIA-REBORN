@@ -1,0 +1,22 @@
+	instr {{ instrument.uid }}_bridge
+ich init p4
+	xtratim giXTRATIM
+
+krel		init 0
+krel		release
+idyn		init 1
+adyn_in	cosseg 0, .005, 1
+adyn_out	init 1
+
+if krel == 1 then
+	adyn_in cosseg idyn, giXTRATIM/4, 0, giXTRATIM*3/4, 0 
+	adyn_out cosseg idyn, giXTRATIM*2/3, idyn, giXTRATIM/3, 0
+endif
+
+amain_in chnget sprintf("%s_%i", "{{ instrument.name }}", ich)
+amain_in *= adyn_in
+
+{{ chain }}
+
+	chnmix amain_out*adyn_out, gSmouth[ich-1]
+	endin

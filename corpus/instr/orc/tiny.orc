@@ -4,12 +4,7 @@ coming from another synth icreated working on cordelia reborn
 è rimasto nel cuore, come argilla secca sugli scogli
 */
 
-	instr tiny
-idur init p3
-idyn init p4
-ienv init p5
-icps init p6
-ich init p7
+	$CORDELIA_BEGIN_INSTR(tiny)
 
 irel init idur+random(.005, -.005)
 	xtratim irel
@@ -21,9 +16,9 @@ avco vco2 1/64+random(0, .005), icps
 aout sum aosc, anoi*cosseg(1, .005+random(.0095, .005), 0), avco
 aout = aout * (.5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005)))
 
-aenv cossegr 0, .005, 1, idur - .005, random(1/8, 1/24), irel, 0
-aenv_indx linsegr 1, idur, random(1/8, 1/24), irel, 0
-;aenv table3 aenv_indx, ienv, 1
-aout *= aenv
-	outch ich, aout/2*idyn
+aenv_indx	linsegr 1, idur, random(1/8, 1/24), irel, 0
+aenv 			table3 aenv_indx, ienv, 1
+aout 			*= aenv
+
+	$CORDELIA_OUT
 	endin

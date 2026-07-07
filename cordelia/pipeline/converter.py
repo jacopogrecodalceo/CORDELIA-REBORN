@@ -1,68 +1,144 @@
 from loguru import logger
-from cordelia.models.ast import Instrument
+from cordelia.models.ast import Instrument, Variable
 from cordelia.const import jinja_env, csound_comment_line
-from cordelia.registry import ft_pool, orchestra_manager
-from cordelia.registry import uid_tracker
+from cordelia.runtime import pool, orc_queue, tracker
+from cordelia.const import CLEAR_INSTRUMENT_NUM
+from config import CHANNELs
 
-from cordelia.const import jinja_env, csound_comment_line
+def emit_orcs(orcs: list):
+	orc_queue.put('score', '\n'.join(orcs))
 
-def make_modifiers_chain(instrument):
-	if not instrument.score['opcode']:
-		return 'amain_out = amain_in'
+class InstrClear:
+	
+	TURN_OFF2_mode = 4 		# only turn off notes with exactly matching (fractional) instrument number, rather than ignoring fractional part
+	TURN_OFF2_release = 1 	# non release
 
-def make_bridge(instrument):
-	logger.debug('BRIDGE')
-	chain = make_modifiers_chain(instrument)
-	route_template = jinja_env.get_template('instr_bridge.j2')
-	orcs = [
-		csound_comment_line(f'BRIDGE {instrument.name}'),
-		route_template.render(instrument=instrument, chain=chain)
-	]
-	return '\n'.join(orcs)
+	def __init__(self, instrument):
+		self.instrument = instrument
+		self.nums_allocated = []
 
-def _prepare_context(instrument: Instrument) -> None:
-	instrument.ft_num = {q: ft_pool.alloc() for q in instrument.score}
+	def init(self): 
+		orcs = []
+		for ch in range(1, CHANNELs+1):
+			num = pool.clear_instr.alloc()
+			self.nums_allocated.append(num)
+			orcs.append(f'schedule {CLEAR_INSTRUMENT_NUM + num*10e-3}, 0, -1, "{self.instrument.name}_{ch}"')
+		emit_orcs(orcs)
 
-def convert(instrument: Instrument) -> None:
-	if not isinstance(instrument, Instrument):
-		return
-	if instrument.uid in uid_tracker:
-		orc_lines = [csound_comment_line('UPDATE')]
-		logger.debug(f'{instrument.uid} is in uid_tracker')
+	def release(self):
+		orcs = []
+		for num in self.nums_allocated:
+			orcs.append(f'turnoff2_i {CLEAR_INSTRUMENT_NUM + num*10e-3}, {self.TURN_OFF2_mode}, {self.TURN_OFF2_release}')
+			pool.clear_instr.release(num)
+		emit_orcs(orcs)
 
-		# check if has some changement or anything else
-		original_instrument = uid_tracker[instrument.uid]
-		logger.debug(f'PREV: {original_instrument}—{original_instrument.score}')
-		logger.debug(f'ACTUAL: {instrument}—{instrument.score}')
+class InstrBridge:
 
-		for quality_name, values in instrument.score.items():
-			logger.debug(f'COMPARING: {quality_name}')
-			prev_values = original_instrument.score.get(quality_name)
-			if prev_values == values:
-				logger.debug(f'{quality_name} is the same as before')
-				logger.info(f'skip | id={instrument.instr_id} | name={instrument.name}')
-				instrument.state = 'skip'
-			else:
-				logger.debug(f'{quality_name}: previous {prev_values} is different from {values}')
-				original_instrument.state = 'patch'
-				original_instrument.score[quality_name] = values
-				logger.info(f'updating | id={original_instrument.instr_id} | name={original_instrument.name}')
-				logger.debug(values)
-				if quality_name == 'cycle':
-					string = f'gk{ instrument.uid }_cycle init { instrument.score['cycle'] }'
-				elif quality_name in ['talea', 'colores', 'dur', 'dyn', 'env', 'space']:
-					string = f'gi{original_instrument.uid}_{quality_name} ftgen {original_instrument.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, {len(values)}, {", ".join(map(str, values))}'
+	TURN_OFF2_mode = 4 		# only turn off notes with exactly matching (fractional) instrument number, rather than ignoring fractional part
+	TURN_OFF2_release = 1 	# non release
 
-				orc_lines.append(string)
-				logger.debug(orc_lines)
-		orc = '\n'.join(orc_lines)
-	else:
-		logger.info(f'rendering born | id={instrument.instr_id} | name={instrument.name}')
-		template = jinja_env.get_template('instrument_born.j2')
-		_prepare_context(instrument)
-		orc = template.render(instrument=instrument)
-		instrument.state = False
-		uid_tracker[instrument.uid] = instrument
-		orchestra_manager.put('instrument', make_bridge(instrument))
+	def __init__(self, instrument):
+		self.instrument = instrument
 
-	orchestra_manager.put('score', orc)
+	def instr_num(self, ch):
+		return f'nstrnum("{self.instrument.uid}_bridge")+{ch}/1000'
+
+	def _schedule_instr(self):
+		orcs = []
+		for ch in range(1, CHANNELs+1):
+			orcs.append(f'schedule {self.instr_num(ch)}, 0, -1, {ch}')
+		emit_orcs(orcs)
+
+	def _make_modifiers_chain(self):
+		if not self.instrument.modifiers:
+			return 'amain_out = amain_in'
+
+	def _make_instr(self):
+		chain = self._make_modifiers_chain()    
+		bridge_template = jinja_env.get_template('bridge_init.j2')
+		orcs = [
+			csound_comment_line(f'BRIDGE {self.instrument.name}'),
+			bridge_template.render(instrument=self.instrument, chain=chain)
+		]
+		emit_orcs(orcs)
+
+	def _turnoff_instr(self):
+		orcs = []
+		for ch in range(1, CHANNELs+1):
+			orcs.append(f'turnoff2_i {self.instr_num(ch)}, {self.TURN_OFF2_mode}, {self.TURN_OFF2_release}')
+		emit_orcs(orcs)
+
+	def init(self):
+		self._make_instr()
+		self._schedule_instr()
+
+	def release(self):
+		self._turnoff_instr()
+
+
+
+def _init_ft(instrument):
+	order = ['cycle', 'talea', 'colores', 'dur', 'dyn', 'env', 'space']    
+	instrument.ft_num = {name: pool.ft.alloc() for name in order}
+
+def _release_ft(instrument):
+	for ft_num in instrument.ft_num.values():
+		pool.ft.release(ft_num)
+
+def _init_instr(instrument):
+	template = jinja_env.get_template('instr_init.j2')
+	orc = template.render(instrument=instrument)
+	return orc
+
+def _release_instr(instrument):
+	return f'turnoff2_i "{instrument.uid}", 0, 0'
+
+def instr_init(instrument):
+	orcs = [csound_comment_line('INIT')]   
+	_init_ft(instrument)
+ 
+	orcs.append(_init_instr(instrument))
+	emit_orcs(orcs)
+
+	instrument.clear = InstrClear(instrument)
+	instrument.clear.init()
+
+	instrument.bridge = InstrBridge(instrument)
+	instrument.bridge.init()
+
+def instr_patch(instrument):
+	orcs = [csound_comment_line('PATCHED')]
+
+	for quality_name, values in instrument.score:
+		prev_values = getattr(instrument.is_playing_instr.score, quality_name)
+		if prev_values != values:
+			string = f'gi{instrument.is_playing_instr.uid}_{quality_name} ftgen {instrument.is_playing_instr.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, {len(values)}, {", ".join(map(str, values))}'
+			orcs.append(string)
+	emit_orcs(orcs)
+	del instrument.is_playing_instr
+
+def instr_release(instrument):
+	orcs = [csound_comment_line('RELEASE')]   
+	_release_ft(instrument)
+ 
+	orcs.append(_release_instr(instrument))
+	emit_orcs(orcs)
+
+	instrument.clear.release()
+	instrument.bridge.release()
+
+
+def convert_instrument(instrument: Instrument):
+	if instrument.state == 'release':
+		instr_release(instrument)
+	elif instrument.state == 'patched':
+		instr_patch(instrument)
+	elif instrument.state == 'init':
+		instr_init(instrument)
+
+def convert(units: list):
+	for unit in units:
+		if isinstance(unit, Instrument):
+			convert_instrument(unit)
+		elif isinstance(unit, Variable):
+			pass

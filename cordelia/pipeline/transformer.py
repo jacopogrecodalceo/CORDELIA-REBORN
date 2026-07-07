@@ -64,7 +64,7 @@ class CordeliaTransformer(Transformer):
 	def header(self, children):
 		if len(children) > 1:
 			return str(children[0]), int(children[1])
-		return str(children[0]), None
+		return str(children[0]), 1
 
 	# ── modifiers ─────────────────────────────────────────────────────────────
 

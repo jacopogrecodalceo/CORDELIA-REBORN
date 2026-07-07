@@ -25,6 +25,8 @@ CSOUND_DEVICEs = {
 	'dac': {}
 }
 
+
+CLEAR_INSTRUMENT_NUM = 950
 FTGEN_SIZE = 8192
 
 REAPER_CLIENT = SimpleUDPClient(
@@ -51,5 +53,7 @@ data = {
 	for f in cordelia.path.corpus_json_dir.glob("*.json")
 }
 
+data_to_emit = {k: v for k, v in data.items() if k not in {'dyn', 'dur', 'mode'}}
+
 def csound_comment_line(string):
-	return f';' + string + '·'*128
+	return f'\n; ' + string + '·'*128

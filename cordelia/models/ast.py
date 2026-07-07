@@ -34,6 +34,7 @@ class PreScore:
 class Variable:
 	name: str
 	value: list[Any] = field(default_factory=list)
+	uid: str = ''
 
 @dataclass
 class Instrument:
@@ -43,3 +44,4 @@ class Instrument:
 
 	name_id: int = field(default_factory=1)
 	score: Score = field(default_factory=Score)
+	uid: str = ''

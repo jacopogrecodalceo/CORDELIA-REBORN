@@ -1,3 +1,4 @@
+import re
 from cordelia.models.ast import Instrument, Variable, Modifier
 from cordelia.runtime import tracker, orc_queue
 from cordelia.const import data
@@ -6,7 +7,6 @@ from cordelia.pipeline.deducer import deduce_quality
 class CordeliaResolveError(Exception):
 	pass
 
-import re
 
 OPCODE_RE = re.compile(
 	r"opcode\s+(cordelia_\w+)\s*,\s*([^,]+)\s*,\s*([^\n\r]+)",
@@ -31,9 +31,11 @@ def _resolve_instrument_name(name: str) -> bool:
 		raise CordeliaResolveError(f"Cannot resolve '{name}'")
 	tracker.instrument.add(name)
 	with open(orc, 'r') as f:
-		orc_queue.instrument.add(f.read())
+		orc_queue.put('instrument', f.read())
 	return True
 
+def _resolve_uid(instrument):
+   instrument.uid = f'{instrument.name}_{instrument.name_id}'
 
 def _resolve_modifier(modifier: Modifier) -> bool:
 	name = modifier.name
@@ -43,7 +45,7 @@ def _resolve_modifier(modifier: Modifier) -> bool:
 		with open(modifier_path, 'r') as f:
 			modifier_orc = f.read()
 		csound_name, ins, outs = parse_modifier(modifier_orc)
-		orc_queue.modifier.add(modifier_orc)
+		orc_queue.put('modifier', modifier_orc)
 		tracker.modifier[name] = (csound_name, ins, outs)
 	else:
 		csound_name, ins, outs = already_resolved
@@ -58,6 +60,7 @@ def resolve(unit: Instrument | Variable):
 
 		try:
 			_resolve_instrument_name(unit.name)
+			_resolve_uid(unit)
 		except CordeliaResolveError as e:
 			errors.append(e)
 

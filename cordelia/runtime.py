@@ -1,11 +1,13 @@
+from nltk import data
+
 from cordelia.const import csound_comment_line
 from datetime import datetime
 from dataclasses import dataclass, field
 import threading
 import queue
 
-class FtPool:
-	def __init__(self, start: int = 1001):
+class Pool:
+	def __init__(self, start):
 		self._next: int = start
 		self.used: set[int] = set()
 
@@ -29,9 +31,8 @@ class FtPool:
 				n += 1
 		return n
 
-
 class OrchestraQueue:
-	_sections: list[str] = ['variable', 'ft', 'instrument', 'modifier', 'score']
+	_sections: list[str] = ['variable', 'env', 'instrument', 'modifier', 'score']
 
 	def __init__(self):
 		self.init = True
@@ -75,23 +76,22 @@ class OrchestraQueue:
 
 stop_event = threading.Event()
 
-
-@dataclass
-class CompilerQueue:
-	instrument: OrchestraQueue = field(default_factory=OrchestraQueue)
-	modifier: OrchestraQueue = field(default_factory=OrchestraQueue)
-	ft: OrchestraQueue = field(default_factory=OrchestraQueue)
-	mode: OrchestraQueue = field(default_factory=OrchestraQueue)
-	scala: OrchestraQueue = field(default_factory=OrchestraQueue)
-
 @dataclass
 class Tracker:
 	instrument: set = field(default_factory=set)
 	modifier: dict = field(default_factory=dict)
-	ft: set = field(default_factory=set)
+	env: set = field(default_factory=set)
 	mode: set = field(default_factory=set)
 	scala: set = field(default_factory=set)
+	uid: dict = field(default_factory=dict)
+
+@dataclass
+class PoolManager:
+	ft: Pool = field(default_factory=lambda: Pool(1001))
+	clear_instr: Pool = field(default_factory=lambda: Pool(1))
 
 tracker = Tracker()
-orc_queue = CompilerQueue()
-ft_pool = FtPool()
+orc_queue = OrchestraQueue()
+pool = PoolManager()
+
+session_units = dict()

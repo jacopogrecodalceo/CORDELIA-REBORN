@@ -4,11 +4,6 @@
       "default": 120,
       "description": "tempo in beats per minute"
    },
-   "p": {
-      "type": "int",
-      "default": 4,
-      "description": "pulse — number of beats per measure"
-   },
    "ts": {
       "type": "string",
       "default": "4/4",

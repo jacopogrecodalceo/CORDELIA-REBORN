@@ -1,7 +1,9 @@
-from abjad import get
 from loguru import logger
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Any
+
+from cordelia.const import data_to_emit
+from cordelia.runtime import tracker, orc_queue
 from cordelia.models import *
 
 import operator
@@ -120,8 +122,13 @@ class Score:
 	dur: list[Dur] = field(default_factory=list)
 	dyn: list[Dyn] = field(default_factory=list)
 	env: list[Env] = field(default_factory=list)
+	space: list[Env] = field(default_factory=list)
 	character: list[Character] = field(default_factory=list)
 	cycle: list[Cycle] = field(default_factory=list)
+
+	def __iter__(self):
+		for f in fields(self):
+			yield f.name, getattr(self, f.name)
 
 	def flat_values(self):
 		for quality_name in vars(self):
@@ -129,6 +136,21 @@ class Score:
 			for class_value in getattr(self, quality_name):
 				new_values.extend(class_value.process())
 			setattr(self, quality_name, new_values)
+
+	def load_others(self):
+		score_tokens = (
+			token
+			for quality_name in vars(self)
+			for token in getattr(self, quality_name)
+		)
+		for token in score_tokens:
+			for quality_name, keyword_path_map in data_to_emit.items():
+				if token in keyword_path_map:
+					is_named_token = any(c.isalpha() for c in token)
+					if is_named_token and token not in getattr(tracker, quality_name):
+						with open(keyword_path_map[token]) as f:
+							orc_queue.put(quality_name, f.read())
+						setattr(tracker, quality_name, token)
 
 	def fill_default(self):
 		if not self.colores:
@@ -141,16 +163,21 @@ class Score:
 			self.env = ['cls']
 		if not self.cycle:
 			self.cycle = [8]
+		if not self.space:
+			self.space = [0]
 
 	def process_talea(self):
 		self.talea = count_ones(self.talea)
 
-	def process_cycle(self):
+	""" def process_cycle(self):
 		full_cycle = []
 		cycle_n = len(self.cycle)
 		for i in range(64):
 			full_cycle.append(self.cycle[i%cycle_n])
-		self.cycle = full_cycle
+		self.cycle = full_cycle """
+	
+	def process_cycle(self):
+		pass
 
 	def process_dur(self):
 		deducted_durs = self.dur
@@ -187,8 +214,11 @@ class Score:
 		self.flat_values()
 		self.fill_default()
 
+		self.load_others()
+  
 		self.process_talea()
 		self.process_cycle()
 		self.process_dur()
 		self.process_dyn()
 		self.process_env()
+  
