@@ -16,7 +16,7 @@ REPEAT: /x\d+|\d+x\d+/
 
 _NL:    NEWLINE
 _DELIM: "·" | "|"
-_SEP: WS_INLINE
+_SPACE: WS_INLINE
 
 SYM: /\+|\-|\*|\/|<|>|=|\./
 
@@ -29,11 +29,16 @@ header: "@" NAME ("#" NUMBER)?
 // MAIN ENTRIEs
 // ─────────────────────────────────────────────
 
-statement: header _SEP expr (_SEP expr)*
+statement: header _SPACE expr (_SPACE expr)*
 
-phrase:  header stanza* _SEP* verses
-verses: ((_DELIM | _NL) _SEP* verse _SEP*)+
-verse: _SEP* expr (_SEP expr)*
+phrase:  header stanza* verses
+
+// ─────────────────────────────────────────────
+// VERSE
+// ─────────────────────────────────────────────
+
+verses: ((_DELIM | _NL) verse)+
+verse: _SPACE* expr (_SPACE expr)*
 
 // ─────────────────────────────────────────────
 // stanza are modifiers aka FXs
@@ -48,8 +53,8 @@ parallel: ":" NAME array? ("{}"|"()")?
 // STRUCTURES
 // ─────────────────────────────────────────────
 
-array: "(" _SEP* expr (_SEP+ expr)* _SEP* ")"
-     | "{" _SEP* expr (_SEP+ expr)* _SEP* "}"
+array: "(" _SPACE* expr (_SPACE+ expr)* _SPACE* ")"
+     | "{" _SPACE* expr (_SPACE+ expr)* _SPACE* "}"
 
 func: NAME array
 
