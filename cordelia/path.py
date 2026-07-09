@@ -18,6 +18,8 @@ corpus = main_dir / 'corpus' # this is the main directory corpus
 
 corpus_json_dir = corpus / '_json'
 
+func_corpus_dir = corpus / 'func'
+
 instr_corpus_dir = corpus / 'instr'
 instr_corpus_json = corpus_json_dir / 'instrument.json'
 

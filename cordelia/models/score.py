@@ -4,7 +4,6 @@ from typing import Any
 
 from cordelia.const import data_to_emit
 from cordelia.runtime import tracker, orc_queue
-from cordelia.models import *
 
 import operator
 
@@ -147,11 +146,13 @@ class Score:
 			for quality_name, keyword_path_map in data_to_emit.items():
 				if token in keyword_path_map:
 					is_named_token = any(c.isalpha() for c in token)
-					if is_named_token and token not in getattr(tracker, quality_name):
+
+					local_tracker = getattr(tracker, quality_name)
+					if is_named_token and token not in local_tracker:
 						with open(keyword_path_map[token]) as f:
 							orc_queue.put(quality_name, f.read())
-						setattr(tracker, quality_name, token)
-
+						local_tracker.add(token)
+      
 	def fill_default(self):
 		if not self.colores:
 			self.colores = [1]
@@ -222,3 +223,27 @@ class Score:
 		self.process_dyn()
 		self.process_env()
   
+
+# ---------------------------------------------------------------------------- #
+#                                AYATTETION HERE                               #
+# ---------------------------------------------------------------------------- #
+	def deduce_func(self):
+		from cordelia.models.ast import Func  # deferred import breaks the cycle
+		from cordelia.pipeline.deducer import func_registry
+		for quality_name in vars(self):
+			tokens = getattr(self, quality_name)
+			new_tokens = []
+			for token in tokens:
+				print(token)
+				if isinstance(token, Func):
+					name  = token.name
+					items = token.args
+					fn = func_registry.get(name)
+					if fn is None:
+						raise ValueError(
+							f"cannot find function '{name}', available: {', '.join(sorted(func_registry))}"
+						)
+					new_tokens.append(fn(items))
+				else:
+					new_tokens.append(token)
+			setattr(self, quality_name, new_tokens)

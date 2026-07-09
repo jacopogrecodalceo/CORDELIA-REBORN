@@ -25,7 +25,7 @@ import ctcsound
 
 from loguru import logger
 
-from cordelia.pipeline.deducer import load_qualities_from_corpus
+from cordelia.pipeline.deducer import load_from_corpus
 from cordelia.csound.run import build_orchestra, init
 from cordelia.pipeline.parser import parse
 from cordelia.pipeline.transformer import transform
@@ -149,7 +149,7 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 
 def main() -> None:
 
-	load_qualities_from_corpus()
+	load_from_corpus()
 
 	cs, pt = _build_csound()
 

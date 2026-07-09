@@ -29,6 +29,7 @@ def expand_x_repeat(items: list) -> list:
 
 		expanded.append(item)
 		i += 1
+
 	return expanded
 
 

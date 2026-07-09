@@ -1,3 +1,6 @@
+   
+import threading
+from queue import Queue
 from dataclasses import dataclass, field
 import select
 import socket
@@ -49,9 +52,6 @@ class UDPRouter:
 
       return messages
    
-   
-import threading
-from queue import Queue
 
 
 class UDPWorker:
@@ -67,6 +67,7 @@ class UDPWorker:
 
    def stop(self):
       self._stop.set()
+      self.thread.join()
       self.router.close_ports()
 
    def _run(self):

@@ -2,7 +2,7 @@
 %import common.WS_INLINE
 
 // ─────────────────────────────────────────────
-// TOKENS
+// TOKENs
 // ─────────────────────────────────────────────
 
 NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
@@ -20,27 +20,26 @@ _SEP: WS_INLINE
 
 SYM: /\+|\-|\*|\/|<|>|=|\./
 
-// ─── HEADER ──────────────────────────────────────────────────────────────────
 header: "@" NAME ("#" NUMBER)?
 
-// ─── ENTRY ───────────────────────────────────────────────────────────────────
+?poem: phrase | statement
 
-?unit: phrase | statement
 
-// ─── STATEMENT ───────────────────────────────────────────────────────────────
-
-statement: header _SEP term (SYM term)* (_SEP term (SYM term)*)*
-
-// ─── PHRASE ──────────────────────────────────────────────────────────────────
-
-phrase:  header modifier* _SEP* score
-score: ((_DELIM | _NL) _SEP* quality _SEP*)+
-quality: _SEP* term (SYM term)* (_SEP term (SYM term)*)*
 // ─────────────────────────────────────────────
-// MODIFIERS
+// MAIN ENTRIEs
 // ─────────────────────────────────────────────
 
-modifier: _NL* (serial | parallel)
+statement: header _SEP expr (_SEP expr)*
+
+phrase:  header stanza* _SEP* verses
+verses: ((_DELIM | _NL) _SEP* verse _SEP*)+
+verse: _SEP* expr (_SEP expr)*
+
+// ─────────────────────────────────────────────
+// stanza are modifiers aka FXs
+// ─────────────────────────────────────────────
+
+stanza: _NL* (serial | parallel)
 
 serial:   "." NAME array? ("{}"|"()")?
 parallel: ":" NAME array? ("{}"|"()")?
@@ -49,14 +48,16 @@ parallel: ":" NAME array? ("{}"|"()")?
 // STRUCTURES
 // ─────────────────────────────────────────────
 
-array: "(" _SEP* term (SYM term)* (_SEP+ term (SYM term)*)* _SEP* ")"
-     | "{" _SEP* term (SYM term)* (_SEP+ term (SYM term)*)* _SEP* "}"
+array: "(" _SEP* expr (_SEP+ expr)* _SEP* ")"
+     | "{" _SEP* expr (_SEP+ expr)* _SEP* "}"
 
 func: NAME array
 
 // ─────────────────────────────────────────────
-// term (SYM term)*ESSION SYSTEM (THIS IS THE KEY FIX)
+// LEAVEs
 // ─────────────────────────────────────────────
+
+expr: term (SYM term)*
 
 ?term: func
      | array

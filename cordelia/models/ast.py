@@ -9,9 +9,13 @@ class Func:
 	args: list[Any] = field(default_factory=list)
 
 @dataclass
+class Expr:
+	args: list
+
+""" @dataclass
 class Array:
 	items: list[Any] = field(default_factory=list)
-
+ """
 @dataclass
 class Quality:
 	items: list[Any] = field(default_factory=list)
@@ -20,7 +24,7 @@ class Quality:
 class Modifier:
 	kind: str        # "dot" | "colon"
 	name: str
-	values: Array | None = None
+	args: None = None
  
 	csound_name: Optional[str] = None
 	ins: Optional[str] = None
@@ -28,12 +32,12 @@ class Modifier:
 
 @dataclass
 class PreScore:
-	items: list[Quality] = field(default_factory=list)
+	args: list[Quality] = field(default_factory=list)
 
 @dataclass
 class Variable:
 	name: str
-	value: list[Any] = field(default_factory=list)
+	args: list[Any] = field(default_factory=list)
 	uid: str = ''
 
 @dataclass
@@ -45,3 +49,5 @@ class Instrument:
 	name_id: int = field(default_factory=1)
 	score: Score = field(default_factory=Score)
 	uid: str = ''
+ 
+	gkinstrs: list = field(default_factory=list)

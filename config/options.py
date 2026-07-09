@@ -13,8 +13,8 @@ flags = [
    #f'-o{cordelia.const.OUTPUT_SCORE_PATH}',
    f'--nchnls={CHANNELs}',
    f'--sample-rate={SR}',
-   '--format=24bit',
    f'--ksmps={KSMPS}',
+   '--format=24bit',
 
    '--0dbfs=1',
 

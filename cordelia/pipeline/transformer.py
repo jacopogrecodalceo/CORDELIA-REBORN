@@ -1,6 +1,7 @@
 from lark import Transformer
 from cordelia.models.ast import *
 from cordelia.pipeline.expander import expand
+
 # ---------------------------------------------------------------------------- #
 #                                    ERRORs                                    #
 # ---------------------------------------------------------------------------- #
@@ -39,22 +40,32 @@ class CordeliaTransformer(Transformer):
 
 	# ---------------------------------------------------------------------------- #
 	#                                     RULEs                                    #
+	#   contract: only rules that ASSEMBLE a fresh list from raw children call     #
+	#   expand(). every other rule trusts its children unchanged. expr never       #
+	#   returns a bare list -- single term passes through, multi-term becomes an   #
+	#   Expr node, so expand() can never mistake an infix chain for an array.      #
 	# ---------------------------------------------------------------------------- #
-
 	def func(self, children):
 		name = str(children[0])
-		items = children[1]
-		return Func(name=name, args=expand(items))
+		args = children[1]
+		return Func(name=name, args=args)
 
 	def array(self, children):
 		items = list(children)
 		return expand(items)
 
+	def expr(self, children):
+		items = list(children)
+		if len(items) == 1:
+			return items[0]
+		return Expr(terms=items)
+
 	# ── quality / score ───────────────────────────────────────────────────────
 
 	def quality(self, children):
 		items = list(children)
-		return Quality(items=expand(items))
+		items = expand(items)
+		return Quality(items=items)
 
 	def score(self, children):
 		return PreScore(items=list(children))
@@ -71,15 +82,11 @@ class CordeliaTransformer(Transformer):
 	def serial(self, children):
 		name = str(children[0])
 		array = children[1] if len(children) > 1 else None
-		if array:
-			array = expand(array)
 		return Modifier(kind="serial", name=name, values=array)
 
 	def parallel(self, children):
 		name = str(children[0])
 		array = children[1] if len(children) > 1 else None
-		if array:
-			array = expand(array)  
 		return Modifier(kind="parallel", name=name, values=array)
 
 	def modifier(self, children):
@@ -95,23 +102,23 @@ class CordeliaTransformer(Transformer):
 		return Variable(name=name, value=expand(items))
 
 	def phrase(self, children):
-		name, name_id = children[0] # header
+		name, name_id = children[0]  # header
 		rest = children[1:]
 		modifiers = []
 		score = None
 		for c in rest:
 			if isinstance(c, Modifier):
-					modifiers.append(c)
+				modifiers.append(c)
 			elif isinstance(c, PreScore):
-					if score is not None:
-						raise CordeliaDeductionError(f"duplicate score in phrase '{name}'")
-					score = c
+				if score is not None:
+					raise CordeliaDeductionError(f"duplicate score in phrase '{name}'")
+				score = c
 			else:
-					raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
+				raise CordeliaDeductionError(f"unexpected child in phrase '{name}': {c!r}")
 		if score is None:
 			raise CordeliaDeductionError(f"phrase '{name}' has no score")
 		return Instrument(name=name, qualities=score.items, modifiers=modifiers, name_id=name_id)
 
 _transformer = CordeliaTransformer()
 def transform(chunks: list) -> list:
-   return [_transformer.transform(chunk) for chunk in chunks]
+	return [_transformer.transform(chunk) for chunk in chunks]

@@ -53,7 +53,7 @@ data = {
 	for f in cordelia.path.corpus_json_dir.glob("*.json")
 }
 
-data_to_emit = {k: v for k, v in data.items() if k not in {'dyn', 'dur', 'mode'}}
+data_to_emit = {k: v for k, v in data.items() if k not in {'dyn', 'dur', 'mode', 'degree'}}
 
 def csound_comment_line(string):
 	return f'\n; ' + string + '·'*128

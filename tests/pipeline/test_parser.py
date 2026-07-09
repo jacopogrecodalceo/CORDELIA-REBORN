@@ -53,3 +53,4 @@ def test_ancient_cordelia():
    for t in trees:
       console.print(t)
    assert len(trees) > 0
+

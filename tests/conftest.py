@@ -1,2 +1,2 @@
-from cordelia.pipeline.deducer import load_qualities_from_corpus
-load_qualities_from_corpus()
+from cordelia.pipeline.deducer import load_from_corpus
+load_from_corpus()

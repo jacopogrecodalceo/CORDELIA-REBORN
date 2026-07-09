@@ -1,0 +1,24 @@
+from corpus.func import *
+
+def main(args):
+	items = args.items
+	if len(items) == 3:
+		values   = items[:2]
+		waveform = items[2]
+		if not waveform.isalpha():
+			raise CordeliaFuncError(f'{__name__} {waveform} not a waveform')
+	elif len(items) == 2:
+		values   = items[:2]
+		waveform = 'giasine'
+	else:
+		raise CordeliaFuncError(f'{__name__} error in parameters length')
+
+	new_values = []
+	for v in values:
+		new_values.append(f'{v}+jitter({v}/4, gkBEATf, gkBEATf/8)')
+
+	packed = new_values + [waveform]
+	if len(packed) != 3:
+		raise CordeliaFuncError(f'{__name__} {packed} not enough values')
+
+	return f"oscil3:k({', '.join(packed)})"
