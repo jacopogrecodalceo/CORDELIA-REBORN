@@ -1,23 +1,3 @@
-"""
-main.py — cordelia runtime
-===========================
-
-THREAD ARCHITECTURE
--------------------
-
-	main thread
-		├── csound performance thread   (audio, highest priority)
-		├── udp thread                  (network I/O, blocking recv)
-		├── scheduler thread            (phase polling, sends to csound)
-		└── csound monitor thread       (watchdog, triggers shutdown)
-
-COMMUNICATION
--------------
-	udp thread → parse → process → OrchestraManager queues
-	scheduler thread → OrchestraManager.flush() → cs.compileOrc()
-	csound monitor → stop_event → all threads
-"""
-
 import time
 import signal
 import threading
@@ -25,22 +5,27 @@ import ctcsound
 
 from loguru import logger
 
-from cordelia.pipeline.deducer import load_from_corpus
 from cordelia.csound.run import build_orchestra, init
+
 from cordelia.pipeline.parser import parse
 from cordelia.pipeline.transformer import transform
-from cordelia.pipeline.resolver import resolve
-from cordelia.pipeline.converter import convert
+from cordelia.pipeline.deducer import deduce
+from cordelia.pipeline.comparer import compare
+from cordelia.pipeline.learner import learn
+from cordelia.pipeline.converter import offer
+
 from cordelia.udp import UDPRouter, UDPWorker
 from cordelia.console import console
+
 from cordelia.const import (
 	SHORT_REST_AFTER_INIT,
 	UDP_PORTS,
 	QUERY_UDP_WHILE_SLEEP_TIME,
 )
 from config.options import flags
-from cordelia.runtime import stop_event, orc_queue, session_units
+from cordelia.registry import orc_queue
 
+stop_event = threading.Event()
 
 # ─── CSOUND ───────────────────────────────────────────────────────────────────
 
@@ -63,13 +48,6 @@ def _build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
 # ─── THREADS ──────────────────────────────────────────────────────────────────
 
 def _udp_thread_fn(worker: UDPWorker) -> None:
-	global session_units
-	"""
-	blocking UDP listener.
-	parses incoming messages, runs the full pipeline.
-	OrchestraManager queues are filled here as a side effect of convert().
-	never touches csound directly.
-	"""
 	logger.info("udp | listening")
 	while not stop_event.is_set():
 		item = worker.get(timeout=.5)
@@ -78,45 +56,15 @@ def _udp_thread_fn(worker: UDPWorker) -> None:
 		direction, msg = item
 		logger.debug(f"udp | {direction} | {msg!r}")
 		try:
-			current_units = dict()
-			temp_units = list()
-			parsed_units = parse(msg)
-			trees = transform(parsed_units)
-			for unit in trees:
-				logger.debug(f"BEGIN PROCESS: {unit}")
-				resolve(unit)
-				unit.score.process()
-				current_units[unit.uid] = unit
-
-			# compare units
-			init_units = current_units.keys() - session_units.keys()
-			release_units = session_units.keys() - current_units.keys()
-			common_units = current_units.keys() & session_units.keys()
-
-			for k in init_units:
-				current_units[k].state = 'init'
-				temp_units.append(current_units[k])
-				session_units[k] = current_units[k]
-
-			for k in release_units:
-				session_units[k].state = 'release'
-				temp_units.append(session_units[k])
-				del session_units[k]
-    
-			for k in common_units:
-				if current_units[k] != session_units[k]:
-					current_units[k].state = 'patched'
-					current_units[k].is_playing_instr = session_units[k]
-					temp_units.append(current_units[k])
-
-				else:
-					current_units[k].state = 'unpatched'
-					current_units[k].is_playing_instr = session_units[k]
-					temp_units.append(current_units[k])
-
-			convert(temp_units)
-
-
+			pending_poems = []
+			for line in parse(msg):
+				poem = transform(line)
+				deduce(poem)
+				poem.process()
+				pending_poems.append(poem)
+			session_poems = compare(pending_poems)
+			learn(session_poems)
+			offer(session_poems)
 		except Exception as e:
 			logger.exception(f"udp | pipeline error: {e}")
 
@@ -137,9 +85,6 @@ def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThre
 
 
 def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
-	"""
-	watchdog: blocks until csound stops, then triggers global shutdown.
-	"""
 	pt.join()
 	logger.info("csound stopped — triggering shutdown")
 	stop_event.set()
@@ -148,8 +93,6 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-
-	load_from_corpus()
 
 	cs, pt = _build_csound()
 

@@ -2,8 +2,6 @@ from __future__ import annotations
 from datetime import datetime 
 from pythonosc.udp_client import SimpleUDPClient
 from jinja2 import Environment, FileSystemLoader
-from pathlib import Path
-import orjson
 from loguru import logger
 
 from cordelia.helpers import calculate_cordelia_age
@@ -47,13 +45,6 @@ jinja_env = Environment(
 	trim_blocks=True,
 	lstrip_blocks=True,
 )
-
-data = {
-	f.stem: orjson.loads(f.read_bytes())
-	for f in cordelia.path.corpus_json_dir.glob("*.json")
-}
-
-data_to_emit = {k: v for k, v in data.items() if k not in {'dyn', 'dur', 'mode', 'degree'}}
 
 def csound_comment_line(string):
 	return f'\n; ' + string + '·'*128

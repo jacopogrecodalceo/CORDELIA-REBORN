@@ -1,103 +1,98 @@
-from dataclasses import dataclass
-import importlib
-from typing import Any
-from loguru import logger
+import re
+from pathlib import Path
+from types import SimpleNamespace
 
-import cordelia.path
+from cordelia.pipeline.transformer import Instrument, Variable
+from cordelia.pipeline.transformer import Expr, Repeat
 
-class CordeliaDeductionError(Exception):
-	pass
-
-# ─── REGISTRY ────────────────────────────────────────────────────────────────
-# populated by the plugin loader in cordelia/pipeline/qualities.py
-# each entry is a module with match() and a main function named after the file
-
-quality_registry: dict[str, dict[str, Any]] = {}
-func_registry: dict[str, dict[str, Any]] = {}
-logger.debug(quality_registry)
-
-def register(category: str, name: str, module: Any):
-	"""register a plugin module under its category and name"""
-	if category not in quality_registry:
-		quality_registry[category] = {}
-	quality_registry[category][name] = module
-	
-def load_qualities_from_corpus():
-	for path in cordelia.path.score_corpus_dir.rglob("*.py"):
-		if path.stem.startswith("_"):
-			continue
-
-		category = path.parent.name   # talea, colores, dur...
-		name     = path.stem          # eu, iam, talea, mode...
-
-		spec   = importlib.util.spec_from_file_location(name, path)
-		module = importlib.util.module_from_spec(spec)
-		spec.loader.exec_module(module)
-
-		if category not in quality_registry:
-			quality_registry[category] = {}
-		quality_registry[category][name] = module
-
-		register(category, name, module)
-		logger.debug(f"SCORE | loaded {category}/{name}")
-
-	for k, v in quality_registry.items():
-		logger.debug(f"SCORE | registry: {k}: {list(v.keys())}")
-
-def load_functions_from_corpus():
-	for path in cordelia.path.func_corpus_dir.rglob("*.py"):
-		if path.stem.startswith("_"):
-			continue
-		name   = path.stem
-		spec   = importlib.util.spec_from_file_location(name, path)
-		module = importlib.util.module_from_spec(spec)
-		spec.loader.exec_module(module)
-
-		func = getattr(module, "main", None)
-		if not callable(func):
-			continue
-
-		func_registry[name] = func
+from cordelia.registry import registry_quality, registry_func
+from cordelia.registry import data
+from cordelia.registry import orc_queue, tracker
+from cordelia.errors import *
 
 
-def load_from_corpus():
-	load_qualities_from_corpus()
-	load_functions_from_corpus()
- 
-# ─── DEDUCTION ───────────────────────────────────────────────────────────────
-@dataclass
-class Argument:
-	instrument: type
-	quality: type
+OPCODE_RE = re.compile(
+	r"opcode\s+(cordelia_\w+)\s*,\s*([^,]+)\s*,\s*([^\n\r]+)",
+	re.MULTILINE
+)
 
-def deduce_quality(quality, instrument):
-	for category, plugins in quality_registry.items():
-		for name, module in plugins.items():
-			logger.debug(f"deducing {quality.items} for category {category}, file {name}")
-			if module.match(quality.items):
-				fn = getattr(module, 'main', None)
-				if fn is None:
-					raise CordeliaDeductionError(
-						f"plugin {category}/{name} has no function '{name}'"
-					)
-				fn(Argument(instrument, quality))
-				return True
-	raise CordeliaDeductionError(
-		f"no plugin matched quality: {quality.items}"
-	)
+def _deduce_name(instrument):
+	instrument.uid = f'{instrument.name}_{instrument.cordelia_id}'
+	if instrument.name in tracker.instrument:
+		return True
+	path = Path(data['instrument'].get(instrument.name))
+	tracker.instrument.add(instrument.name)
+	orc_queue.put('instrument', path.read_text())
 
-def deduce_function(quality, instrument):
-	for category, plugins in quality_registry.items():
-		for name, module in plugins.items():
-			logger.debug(f"deducing {quality.items} for category {category}, file {name}")
-			if module.match(quality.items):
-				fn = getattr(module, 'main', None)
-				if fn is None:
-					raise CordeliaDeductionError(
-						f"plugin {category}/{name} has no function '{name}'"
-					)
-				fn(Argument(instrument, quality))
-				return True
-	raise CordeliaDeductionError(
-		f"no plugin matched quality: {quality.items}"
-	)
+def _deduce_modifiers(instrument):
+	def parse_modifier(source):
+		matches = list(OPCODE_RE.finditer(source))
+		assert len(matches) == 1, f"MORE THAN ONE cordelia_ opcode recognised in the file {matches}"
+		csound_name, outs, ins = matches[0].groups()
+		return csound_name, ins, outs
+
+	for modifier in instrument.modifiers:
+		cached = tracker.modifier.get(modifier.name)
+		if cached is None:
+			path = Path(data['modifier'].get(modifier.name))
+			modifier_orc = path.read_text()
+			cached = parse_modifier(modifier_orc)
+			orc_queue.put('modifier', modifier_orc)
+			tracker.modifier[modifier.name] = cached
+		modifier.csound_name, modifier.ins, modifier.outs = cached
+
+def parse_quality(items: list):
+	parsed_items = []
+	for item in items:
+		if isinstance(item, Expr):
+			parsed_items.extend(item.items)
+		elif isinstance(item, Repeat):
+			parsed_items.extend(item)
+		else:
+			parsed_items.append(item)
+	return parsed_items   
+
+def _deduce_qualities(instrument):
+	"""
+	registry_quality[name] = {
+		'main': function main,
+		'match': function main match,
+	}
+
+	i.e.
+	registry_quality[talea] = {
+		'eu': {
+			'main': function main,
+			'match': function main match,
+		}
+	}
+	"""
+	for quality in instrument.qualities_raw:
+		matched = False
+		for _quality_name, plugins in registry_quality.items():
+			for _name, module in plugins.items():
+				quality.items = parse_quality(quality.items)
+				if module['match'](quality.items):
+					args = SimpleNamespace(instrument=instrument, quality=quality)
+					module['main'](args)
+					matched = True
+		if not matched:
+			raise CordeliaDeductionError(f"no plugin matched quality: {quality.items}")
+
+def deduce_function(instrument, func):
+	fn = registry_func.get(func.name, None)
+	if fn:
+		args = SimpleNamespace(instrument=instrument, values=func.args)
+		fn(args)
+		return True
+	raise CordeliaDeductionError(f"no plugin matched func: {func.name}")
+
+def deduce(poem):
+	if isinstance(poem, Instrument):
+		instrument = poem
+		_deduce_name(instrument)
+		_deduce_modifiers(poem)
+		_deduce_qualities(poem)
+	elif isinstance(poem, Variable):
+		pass
+

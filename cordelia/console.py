@@ -1,6 +1,8 @@
 from rich.console import Console
 from rich.theme import Theme
 
+from cordelia.errors import *
+
 _theme = Theme({
    "info":       "bold bright_cyan",
    "success":    "bold bright_green",
@@ -8,7 +10,7 @@ _theme = Theme({
    "error":      "bold bright_red",
    "muted":      "dim white",
    "nerv":       "bold white on red",
-   "field":			"bold bright_cyan on black",
+   "field":      "bold bright_cyan on black",
    "angel":      "bold magenta",
    "pilot":      "bold bright_white",
    "sync":       "bright_green",

@@ -9,10 +9,10 @@ NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
 NUMBER: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
 
 // SPECIAL CHAR
-NOTE: /[a-g](?:\.+|'+)?/
+NOTE: /[a-g](is|es)?(?:\.+|'+)?/
 ALEA: /\d+\?/
 DEGREE: /\d+(M|m|d|a)/
-REPEAT: /x\d+|\d+x\d+/
+REPEAT: /\^\d+/
 
 _NL:    NEWLINE
 _DELIM: "·" | "|"
@@ -20,55 +20,55 @@ _SPACE: WS_INLINE
 
 SYM: /\+|\-|\*|\/|<|>|=|\./
 
-header: "@" NAME ("#" NUMBER)?
+INVOCATION_KIND: "."|":"
+
+cordelia_id: ("#" NUMBER)
+
+epigraph: "@" NAME
 
 ?poem: phrase | statement
-
 
 // ─────────────────────────────────────────────
 // MAIN ENTRIEs
 // ─────────────────────────────────────────────
 
-statement: header _SPACE expr (_SPACE expr)*
+statement: epigraph _SPACE verse+
 
-phrase:  header stanza* verses
+phrase:  epigraph cordelia_id? invocation* ((_DELIM | _NL) verse)+
 
 // ─────────────────────────────────────────────
 // VERSE
 // ─────────────────────────────────────────────
 
-verses: ((_DELIM | _NL) verse)+
-verse: _SPACE* expr (_SPACE expr)*
+verse: foot (_SPACE foot)*
 
 // ─────────────────────────────────────────────
-// stanza are modifiers aka FXs
+// invocation are modifiers aka FXs
 // ─────────────────────────────────────────────
 
-stanza: _NL* (serial | parallel)
-
-serial:   "." NAME array? ("{}"|"()")?
-parallel: ":" NAME array? ("{}"|"()")?
+invocation: _NL* INVOCATION_KIND NAME array? ("{}"|"()")?
 
 // ─────────────────────────────────────────────
 // STRUCTURES
 // ─────────────────────────────────────────────
 
-array: "(" _SPACE* expr (_SPACE+ expr)* _SPACE* ")"
-     | "{" _SPACE* expr (_SPACE+ expr)* _SPACE* "}"
+array: "(" _SPACE* foot (_SPACE+ foot)* _SPACE* ")"
+		| "{" _SPACE* foot (_SPACE+ foot)* _SPACE* "}"
 
 func: NAME array
 
 // ─────────────────────────────────────────────
-// LEAVEs
+// FEET
 // ─────────────────────────────────────────────
 
-expr: term (SYM term)*
+foot: repeat (SYM repeat)*
 
-?term: func
-     | array
-     | NOTE
-     | NUMBER
-     | NAME
-     | ALEA
-     | REPEAT
-     | DEGREE
+?repeat: syllabe REPEAT*
+
+?syllabe: func
+			| array
+			| NOTE
+			| NUMBER
+			| NAME
+			| ALEA
+			| DEGREE

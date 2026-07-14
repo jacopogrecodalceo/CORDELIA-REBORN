@@ -1,4 +1,3 @@
-from loguru import logger
 from pathlib import Path
 
 core = Path(__file__).parent
@@ -32,5 +31,5 @@ modifier_corpus_json = corpus_json_dir / 'modifier.json'
 scala_corpus_dir = corpus / 'scala'
 scala_corpus_json = corpus_json_dir / 'scala.json'
 
-score_corpus_dir = corpus / 'score' 
+qualities_corpus_dir = corpus / 'qualities' 
 

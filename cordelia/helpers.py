@@ -10,7 +10,7 @@ def calculate_cordelia_age() -> dict:
 		'years': delta.years,
 		'months': delta.months,
 		'days': delta.days
-  	}
+	}
 
 def db_to_amplitude(db):
 	"""Convert dB to amplitude ratio (0-1)."""

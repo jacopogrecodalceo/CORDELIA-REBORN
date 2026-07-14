@@ -4,8 +4,7 @@ import cordelia.path
 
 GRAMMAR_PATH = cordelia.path.core / 'grammar.lark'
 grammar = GRAMMAR_PATH.read_text()
-p = Lark(grammar, start="unit", parser="earley", lexer="dynamic", ambiguity="resolve")
+p = Lark(grammar, start="poem", parser="earley", lexer="dynamic", ambiguity="resolve")
 
 def parse(source: str) -> list:
    return [p.parse(chunk) for chunk in lex(source)]
-

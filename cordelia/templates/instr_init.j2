@@ -1,9 +1,9 @@
 
-{% for quality, values in instrument.score if quality in ['cycle', 'talea', 'colores', 'dur', 'dyn', 'env', 'space'] %}
-gi{{ instrument.uid }}_{{ quality }} ftgen {{ instrument.ft_num[quality] }}, 0, giFTGEN_SIZE, -2, {{ values | length }}, {{ values | join(', ') }}
+{% for quality, values in instrument.qualities.items() if quality in ['cycle', 'talea', 'color', 'dur', 'dyn', 'env', 'space'] %}
+gi{{ instrument.uid }}_{{ quality }} ftgen {{ ft_num[quality] }}, 0, giFTGEN_SIZE, -2, {{ values.resolved | length }}, {{ values.resolved | join(', ') }}
 {% endfor %}
 
-{% for quality, values in instrument.score if quality in ['colores', 'dur', 'dyn', 'env', 'space'] %}
+{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
 gk{{ instrument.uid }}_{{ quality }}_count init -1
 {% endfor %}
 
@@ -25,13 +25,13 @@ ktalea  table ktalea_idx, gi{{ instrument.uid }}_talea
 
 if ktalea > 0 && ktalea != ktalea_prev then
 	if kinit_flag == 1 then
-		{% for quality, _ in instrument.score if quality in ['colores', 'dur', 'dyn', 'env', 'space'] %}
+		{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
 		gk{{ instrument.uid }}_{{ quality }}_count = ktalea - 1
 		{% endfor %}
 		kinit_flag = 0
 	endif
 
-	{% for quality, _ in instrument.score if quality in ['colores', 'dur', 'dyn', 'env', 'space'] %}
+	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
 	; ··· {{ quality }}
 	k{{ quality }}_len  table 0, gi{{ instrument.uid }}_{{ quality }}
 	k{{ quality }}_idx  = (gk{{ instrument.uid }}_{{ quality }}_count % k{{ quality }}_len) + 1
@@ -41,14 +41,14 @@ if ktalea > 0 && ktalea != ktalea_prev then
 	if kspace == 0 then
 		kch = 1
 		until kch > ginchnls do
-			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolores, kch
+			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolor, kch
 			kch += 1
 		od
 	else
-		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolores, kspace
+		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolor, kspace
 	endif
 
-	{% for quality, _ in instrument.score if quality in ['colores', 'dur', 'dyn', 'env', 'space'] %}
+	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
 	gk{{ instrument.uid }}_{{ quality }}_count += 1
 	{% endfor %}
 	ktalea_prev = ktalea

@@ -1,4 +1,1 @@
-from cordelia.models.ast import Func, Instrument
-
-class CordeliaFuncError(Exception):
-   pass
+from cordelia.errors import *
