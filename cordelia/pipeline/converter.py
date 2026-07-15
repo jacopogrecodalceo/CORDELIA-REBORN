@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from fractions import Fraction
 
 from loguru import logger
 from cordelia.models.instrument import Instrument
 from cordelia.models.variable import Variable
-from cordelia.registry import session
 from cordelia.const import jinja_env, csound_comment_line
 from cordelia.registry import pool, orc_queue
 from cordelia.const import CLEAR_INSTRUMENT_NUM
@@ -184,7 +184,6 @@ class CsInstr_Bridge(CsoundUnit):
 	def release(self):
 		self._turnoff_instr()
 
-
 # ---------------------------------------------------------------------------- #
 #                              INSTRUMENT RUNTIME                              #
 # ---------------------------------------------------------------------------- #
@@ -199,10 +198,52 @@ class InstrumentRuntime:
 	bridge: CsInstr_Bridge = None
 	ft_num: dict = field(default_factory=dict)
 
+	def format_cycle(self, ft_num=None):
+
+		uid = self.instrument.uid    
+		cycles = []
+
+		for cycle in self.instrument.qualities['cycle'].resolved:
+			if '/' in cycle:
+				cycle = float(Fraction(cycle))
+			else:
+				cycle = int(cycle)/4
+			cycles.append(cycle)
+
+		den = 1
+		nums = []
+		while True:
+			if all((v * den).is_integer() for v in cycles):
+				nums = [int(v * den) for v in cycles]
+				break
+			den += 1
+
+		den *= 4
+
+		cums = [0]
+		for val in nums[:-1]:  # Exclude last value
+			cums.append(cums[-1] + val)
+
+		ftgen_values = [i for i, count in enumerate(nums) for _ in range(count)]
+
+		orc = f'''
+gi{ uid }_ts_idx ftgen { ft_num if ft_num else self.ft_num['cycle'] }, 0, giFTGEN_SIZE, -2, {len(ftgen_values)}, { ', '.join(map(str, ftgen_values)) }
+
+gk{ uid }_ts_dur[] fillarray { ', '.join(map(str, nums)) }
+gk{ uid }_ts_start[] fillarray { ', '.join(map(str, cums)) }
+gk{ uid }_ts_den init { den }
+gk{ uid }_ts_total init { sum(nums) }
+		'''
+		return orc
+
 	def init(self):
 		orcs = [csound_comment_line('INIT')]
 		self.ft_num = {name: pool.ft.alloc() for name in FT_ORDER}
+		orc = self.format_cycle()
+		orcs.append(orc)
 		orc = instr_template.render(instrument=self.instrument, ft_num=self.ft_num)
+		orcs.append(orc)
+		orc = f'schedule "{self.instrument.uid}", 0, -1'
 		orcs.append(orc)
 		emit_orc_lines(orcs)
 
@@ -215,16 +256,21 @@ class InstrumentRuntime:
 	def patch(self, previous: InstrumentRuntime):
 		orcs = [csound_comment_line('PATCHED')]
 
-		for quality_name, values in self.instrument.score:
-			prev_values = getattr(previous.instrument.score, quality_name)
-			if prev_values != values:
-				line = (
-					f'gi{previous.instrument.uid}_{quality_name} ftgen '
-					f'{previous.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, '
-					f'{len(values)}, {", ".join(map(str, values))}'
-				)
+		for quality_name, values in self.instrument.qualities.items():
+			values = values.resolved
+			prev_values = previous.instrument.qualities[quality_name].resolved
+			if prev_values != values :
+				if quality_name == 'cycle':
+					line = self.format_cycle(previous.ft_num['cycle'])
+				else:
+					line = (
+						f'gi{previous.instrument.uid}_{quality_name} ftgen '
+						f'{previous.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, '
+						f'{len(values)}, {", ".join(map(str, values))}'
+					)
 				orcs.append(line)
-
+				previous.instrument.qualities[quality_name].resolved = values
+   
 		if previous.instrument.modifiers != self.instrument.modifiers:
 			previous.bridge.release()
 			self.bridge = CsInstr_Bridge(self.instrument)
@@ -232,15 +278,13 @@ class InstrumentRuntime:
 		else:
 			self.bridge = previous.bridge
 
-		self.clear = previous.clear
-		self.ft_num = previous.ft_num
-
 		emit_orc_lines(orcs)
 
 	def release(self):
 		orcs = [csound_comment_line('RELEASE')]
 		for ft_num in self.ft_num.values():
 			pool.ft.release(ft_num)
+			orcs.append(f'; ft num released {ft_num}')
 
 		orcs.append(f'turnoff2_i "{self.instrument.uid}", 0, 0')
 		emit_orc_lines(orcs)
@@ -253,17 +297,23 @@ class InstrumentRuntime:
 #                                 STATE DISPATCH                               #
 # ---------------------------------------------------------------------------- #
 
-def convert_instrument(runtime: InstrumentRuntime, previous: InstrumentRuntime = None):
+session_poems = {}
+
+def convert_instrument(runtime: InstrumentRuntime):
 	state = runtime.instrument.state
 	logger.debug(f'{state} {runtime.instrument}')
 
+	uid = runtime.instrument.uid
+
 	if state == 'release':
-		runtime.release()
-		session.remove(runtime.uid)
+		session_poems[uid].release()
+		session_poems.remove(uid)
 	elif state == 'patched':
+		previous = session_poems[uid]
 		runtime.patch(previous)
 	elif state == 'init':
 		runtime.init()
+		session_poems[uid] = runtime
 	else:
 		logger.debug(f'unpatched {runtime.instrument}')
 
@@ -271,9 +321,8 @@ def convert_instrument(runtime: InstrumentRuntime, previous: InstrumentRuntime =
 def offer(poems: list):
 	for poem in poems:
 		if isinstance(poem, Instrument):
-			previous_instrument = session.get(poem.uid)
 			runtime = InstrumentRuntime(instrument=poem)
-			convert_instrument(runtime, previous_instrument)
+			convert_instrument(runtime)
 
 		elif isinstance(poem, Variable):
 			pass

@@ -1,7 +1,12 @@
 
 
 
-@tiny.dio·eu 4 8 in 8·hz 300^2 500 200·dur*8·f
+@repuck
+eu 8 8 in 16·eu 7 8 in 15·eu 6 8 in 14·eu 5 8 in 15·eu 4 8 in 14
+hz 100 200 300
+f fff mp p^2
+dur*24
+
 
 
 

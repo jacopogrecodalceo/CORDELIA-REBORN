@@ -36,7 +36,7 @@ def main(args) -> Talea:
 		if token == 'in':
 			if i + 1 >= len(args):
 				raise ValueError("'in' requires a duration argument")
-			cycle = int(args[i + 1])
+			cycle = args[i + 1]   
 			break
 
 		if token == '-' and i + 1 < len(args):

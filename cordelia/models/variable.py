@@ -5,3 +5,4 @@ from typing import Any
 class Variable:
 	name: str
 	items: list[Any] = field(default_factory=list)
+

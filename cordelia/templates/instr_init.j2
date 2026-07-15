@@ -1,5 +1,5 @@
 
-{% for quality, values in instrument.qualities.items() if quality in ['cycle', 'talea', 'color', 'dur', 'dyn', 'env', 'space'] %}
+{% for quality, values in instrument.qualities.items() if quality in ['talea', 'color', 'dur', 'dyn', 'env', 'space'] %}
 gi{{ instrument.uid }}_{{ quality }} ftgen {{ ft_num[quality] }}, 0, giFTGEN_SIZE, -2, {{ values.resolved | length }}, {{ values.resolved | join(', ') }}
 {% endfor %}
 
@@ -13,11 +13,12 @@ kinit_flag  init 1
 
 kmain   chnget "heart"
 
-kcycle_len table 0, gi{{ instrument.uid }}_cycle
-kcycle_idx  = floor(((kmain*gkdiv/kcycle_len)%1)*kcycle_len) + 1
-kcycle table kcycle_idx, gi{{ instrument.uid }}_cycle
+kglobal_beat = kmain * gkdiv * (gk{{ instrument.uid }}_ts_den/4)
+kcycle_pos = kglobal_beat % gk{{ instrument.uid }}_ts_total
 
-kphase  = (kmain * kcycle) % 1
+kseg_len		table 0, gi{{ instrument.uid }}_ts_idx
+kseg_idx    table (kcycle_pos / gk{{ instrument.uid }}_ts_total * kseg_len) + 1, gi{{ instrument.uid }}_ts_idx
+kphase 		= (kcycle_pos - gk{{ instrument.uid }}_ts_start[kseg_idx]) / gk{{ instrument.uid }}_ts_dur[kseg_idx]
 
 ktalea_len  table 0, gi{{ instrument.uid }}_talea
 ktalea_idx = floor(kphase * ktalea_len) + 1
@@ -41,11 +42,11 @@ if ktalea > 0 && ktalea != ktalea_prev then
 	if kspace == 0 then
 		kch = 1
 		until kch > ginchnls do
-			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolor, kch
+			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs / gkdiv, kdyn, kenv, kcolor, kch
 			kch += 1
 		od
 	else
-		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs * kcycle / gkdiv, kdyn, kenv, kcolor, kspace
+		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs / gkdiv, kdyn, kenv, kcolor, kspace
 	endif
 
 	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
@@ -54,5 +55,3 @@ if ktalea > 0 && ktalea != ktalea_prev then
 	ktalea_prev = ktalea
 endif
 	endin
-
-schedule "{{ instrument.uid }}", ksmps/sr, -1

@@ -1,5 +1,4 @@
 from loguru import logger
-from cordelia.registry import session
 
 def _check_if_duplicates(pending_poems):
 	poems = {}
@@ -17,9 +16,34 @@ def _check_if_duplicates(pending_poems):
 
 	return poems
 
+session_poems = {}
+
 def compare(pending_poems):
-	cleaned_poems = _check_if_duplicates(pending_poems)
-	cleaned_poems = session.reconcile(cleaned_poems)
-	for poem in cleaned_poems:
-		session.add(poem)
-	return cleaned_poems
+	pending_poems = _check_if_duplicates(pending_poems)
+
+	compared_poems = []
+	init_keys = pending_poems.keys() - session_poems.keys()
+	release_keys = session_poems.keys() - pending_poems.keys()
+	common_keys = pending_poems.keys() & session_poems.keys()
+
+
+	for k in init_keys:
+		poem = pending_poems[k]
+		poem.state = 'init'
+		session_poems[k] = poem
+		compared_poems.append(poem)
+
+	for k in release_keys:
+		poem = session_poems.pop(k)
+		poem.state = 'release'
+		compared_poems.append(poem)
+
+	for k in common_keys:
+		poem = pending_poems[k]
+		previous = session_poems[k]
+		poem.state = 'patched' if poem != previous else 'unpatched'
+		poem.is_playing_instr = previous
+		session_poems[k] = poem
+		compared_poems.append(poem)
+
+	return compared_poems

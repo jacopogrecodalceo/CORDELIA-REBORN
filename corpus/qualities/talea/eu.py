@@ -11,7 +11,7 @@ def main(args):
 
 	args = items[1:]
 	if 'in' in args:
-		cycle = int(args[-1])
+		cycle = args[-1]
 		args = args[:-2]
 
 	pulses = int(args[0])
