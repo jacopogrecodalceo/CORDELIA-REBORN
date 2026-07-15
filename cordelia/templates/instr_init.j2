@@ -13,12 +13,7 @@ kinit_flag  init 1
 
 kmain   chnget "heart"
 
-kglobal_beat = kmain * gkdiv * (gk{{ instrument.uid }}_ts_den/4)
-kcycle_pos = kglobal_beat % gk{{ instrument.uid }}_ts_total
-
-kseg_len		table 0, gi{{ instrument.uid }}_ts_idx
-kseg_idx    table (kcycle_pos / gk{{ instrument.uid }}_ts_total * kseg_len) + 1, gi{{ instrument.uid }}_ts_idx
-kphase 		= (kcycle_pos - gk{{ instrument.uid }}_ts_start[kseg_idx]) / gk{{ instrument.uid }}_ts_dur[kseg_idx]
+kphase table kmain, gi{{ instrument.uid }}_cycle, 1
 
 ktalea_len  table 0, gi{{ instrument.uid }}_talea
 ktalea_idx = floor(kphase * ktalea_len) + 1
