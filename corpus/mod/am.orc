@@ -1,19 +1,12 @@
+; CORDELIA INIT: p1=8, p2=giasine
 
-	opcode cordelia_am, a, aJJ
+	opcode cordelia_am, a, akk
 	ain, kdiv, ktab xin
-
-if kdiv == -1 then
-	kdiv = 8
-endif
-
-if ktab == -1 then
-	ktab = giasine
-endif
 
 kexists ftexists ktab
 if kexists != 1 then
 	ktab = giasine
-	printks "WARNING ***AM*** PARAM_2 IS TAB\n", 1/2
+	printks "WARNING ***AM*** PARAM_2 IS TAB\n", 1/4
 endif
 
 kphase		= kdiv - floor(kdiv)
@@ -31,4 +24,4 @@ aout		= ain * aring
 
 	xout aout
 	endop
-;END OPCODE
+

@@ -1,17 +1,10 @@
+; CORDELIA INIT: p1=ntof("3B"), p2=.5
 
 #define cordelia_wooden_cps(main_freq) #$main_freq+(cent(25)*jitter:k(1, gkBEATf/8, gkBEATf))#
 #define cordelia_wooden_q(main_freq) #$main_freq+jitter:k(1, gkBEATf/8, gkBEATf)#
 
-    opcode cordelia_wooden, a, aJJ
+    opcode cordelia_wooden, a, akk
     ain, kfreq, kq xin
-
-if kfreq == -1 then
-	kfreq = ntof("3B")
-endif
-
-if kq == -1 then
-	kq = .5
-endif
 
 if1     init 1000
 if2     init 3000

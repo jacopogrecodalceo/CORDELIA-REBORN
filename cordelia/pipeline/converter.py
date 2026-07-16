@@ -18,7 +18,6 @@ from config import CHANNELs
 # ---------------------------------------------------------------------------- #
 #                                LOAD TEMPLATEs                                #
 # ---------------------------------------------------------------------------- #
-global_var_template = jinja_env.get_template('global_var_init.j2')
 bridge_template = jinja_env.get_template('bridge_init.j2')
 instr_template = jinja_env.get_template('instr_init.j2')
 
@@ -44,7 +43,7 @@ def turnoff2_line(target: str, mode: int, release: int) -> str:
 #                                 CSOUND UNITs                                 #
 # ---------------------------------------------------------------------------- #
 
-class CsoundUnit(ABC):
+class CsoundInstrClass(ABC):
 	"""shared lifecycle contract for anything emitted into the orc queue."""
 	TURN_OFF2_mode: int
 	TURN_OFF2_release: int
@@ -56,30 +55,30 @@ class CsoundUnit(ABC):
 	def release(self): ...
 
 
-class gkInstr(CsoundUnit):
+class GlobalVarInstr(CsoundInstrClass):
 
 	TURN_OFF2_mode = 0 		# all instances
 	TURN_OFF2_release = 0 	# non release
 
-	def __init__(self, name: str, value: list, instrument: Instrument):
+	def __init__(self, instrument: Instrument, name: str, value: list = None):
 		self.value = value
-		self.csound_instr_name = f'{instrument.uid}_{name}'
-		self.csound_var_name = f'gk{self.csound_instr_name}'
-
-	def _init_var(self):
-		return f'{self.csound_var_name} init 0'
+		self.csound_instr_name = f'{instrument.name}_{name}'
+		self.csound_name = f'gk{self.csound_instr_name}'
 
 	def _schedule(self):
 		return f'schedule "{self.csound_instr_name}", 0, -1'
 
 	def _turnoff(self):
-		return turnoff2_line(self.csound_instr_name, self.TURN_OFF2_mode, self.TURN_OFF2_release)
+		return turnoff2_line(f'"{self.csound_instr_name}"', self.TURN_OFF2_mode, self.TURN_OFF2_release)
 
-	def init(self):
+	def init(self, value=None):
+		if value:
+			self.value = value    
 		orc_lines = [
 			csound_comment_line(f'GLOBAL VAR {self.csound_instr_name} INIT'),
-			self._init_var(),
-			global_var_template.render(vars(self)),
+			f'\tinstr {self.csound_instr_name}',
+			f'{self.csound_name} = {self.value}',
+			'\tendin',
 			self._schedule()
 		]
 		emit_orc_lines(orc_lines)
@@ -87,13 +86,14 @@ class gkInstr(CsoundUnit):
 	def release(self):
 		orc_lines = [
 			csound_comment_line(f'GLOBAL VAR {self.csound_instr_name} RELEASE'),
-			f'turnoff2_i nstrnum({self.csound_instr_name})',
 			self._turnoff()
 		]
 		emit_orc_lines(orc_lines)
 
+	def __bool__(self):
+		return bool(self.value)
 
-class CsInstr_Clear(CsoundUnit):
+class CsInstr_Clear(CsoundInstrClass):
 
 	TURN_OFF2_mode = STRICT_TURN_OFF_mode
 	TURN_OFF2_release = STRICT_TURN_OFF_release
@@ -120,13 +120,15 @@ class CsInstr_Clear(CsoundUnit):
 		emit_orc_lines(orcs)
 
 
-class CsInstr_Bridge(CsoundUnit):
+class CsInstr_Bridge(CsoundInstrClass):
 
 	TURN_OFF2_mode = STRICT_TURN_OFF_mode
 	TURN_OFF2_release = STRICT_TURN_OFF_release
 
 	def __init__(self, instrument: Instrument):
 		self.instrument = instrument
+		self.active_gk_instr_names = {}
+		self.global_var_instr_names = {}
 
 	def instr_num(self, ch):
 		return f'nstrnum("{self.instrument.uid}_bridge")+{ch}/1000'
@@ -138,35 +140,38 @@ class CsInstr_Bridge(CsoundUnit):
 		emit_orc_lines(orcs)
 
 	def _make_modifier_params(self, modifier, index):
-		if not modifier.items or len(modifier.ins) == 1:
-			return []
-		params = []
-		for i, (slot, values) in enumerate(zip(modifier.ins[1:], modifier.items)):
+		for i, slot in enumerate(modifier.udo.real_ins):
 			if slot in ('k', 'J'):
-				name = f'{modifier.name}_{index}_{i}'
-				gkinstr = gkInstr(name, values, self.instrument)
-				self.instrument.gkinstrs.append(gkinstr)
-				gkinstr.init()
-				params.append(gkinstr.csound_var_name)
+				if modifier.items and i < len(modifier.items):
+					value = modifier.items[i]
+					name = self.make_gk_mod_name(modifier, index, i)
+					global_var_instr = self.global_var_instr_names[name]
+					global_var_instr.init(value)
+					self.active_gk_instr_names[name] = global_var_instr
 			elif slot == 'S':
-				pass  # TODO: string-rate params not yet handled
-		return params
+				pass # TODO : string-rate params not yet handled
 
 	def _make_modifiers_chain(self):
 		if not self.instrument.modifiers:
 			return 'amain_out = amain_in'
 
 		chain_lines = []
-		modifier_index = 0
-		while modifier_index < len(self.instrument.modifiers):
-			modifier = self.instrument.modifiers[modifier_index]
-			if modifier_index == 0:
-				params = self._make_modifier_params(modifier, modifier_index + 1)
-				extra = ", " + ", ".join(params) if params else ''
-				chain_lines.append(f'amain_out {modifier.csound_name} amain_in{extra}')
-			else:
-				chain_lines.append(f'amain_out {modifier.csound_name} amain_out')
-			modifier_index += 1
+		for index, modifier in enumerate(self.instrument.modifiers):
+			init_vars = []
+			# make init
+			for i, init_value in enumerate(modifier.udo.init_values):
+				name = self.make_gk_mod_name(modifier, index, i)
+				global_var_instr = GlobalVarInstr(self.instrument, name)
+				self.global_var_instr_names[name] = global_var_instr
+				chain_lines.append(f'{global_var_instr.csound_name} init {init_value}')
+				init_vars.append(global_var_instr.csound_name)
+
+			self._make_modifier_params(modifier, index)
+
+			#extra = ", " + ", ".join(self.instrument.global_var_instr_names) if self.instrument.global_var_instr_names else ''
+			extra = ', '.join(gkname for gkname in init_vars)
+			chain_lines.append(f'amain_out {modifier.udo.name} {'amain_in' if index == 0 else 'amain_out'}, {extra}')
+
 		return '\n'.join(chain_lines)
 
 	def _make_instr(self):
@@ -177,15 +182,48 @@ class CsInstr_Bridge(CsoundUnit):
 		]
 		emit_orc_lines(orcs)
 
-	def _turnoff_instr(self):
+	def _turnoff_main_bridge_instr(self):
 		orcs = []
 		for ch in range(1, CHANNELs + 1):
 			orcs.append(turnoff2_line(self.instr_num(ch), self.TURN_OFF2_mode, self.TURN_OFF2_release))
 		emit_orc_lines(orcs)
 
+	def _turnoff_instr(self):
+		self._turnoff_main_bridge_instr()
+   
+		for global_var_instr in self.active_gk_instr_names.values():
+			global_var_instr.release()
+		self.active_gk_instr_names.clear()
+	
 	def init(self):
 		self._make_instr()
 		self._schedule_instr()
+
+	def make_gk_mod_name(self, modifier, index, j):
+		return f'{modifier.name}_m{index+1}p{j+1}'
+
+	def patch(self, current_runtime: InstrumentRuntime):
+		for index, modifier in enumerate(current_runtime.instrument.modifiers):
+			for i, slot in enumerate(modifier.udo.real_ins):
+				if slot in ('k', 'J'):
+					name = self.make_gk_mod_name(modifier, index, i)
+					# name was used and active
+					if name in self.active_gk_instr_names:
+						global_var_instr = self.active_gk_instr_names[name]
+						global_var_instr.release()
+						if modifier.items and i < len(modifier.items):
+							value = modifier.items[i]
+							global_var_instr.init(value)
+							self.active_gk_instr_names[name] = global_var_instr
+
+					# if name wasnt used, but some items
+					elif name not in self.active_gk_instr_names and modifier.items and i < len(modifier.items):
+						global_var_instr = GlobalVarInstr(self.instrument, name)	
+						self.active_gk_instr_names[name] = global_var_instr
+						global_var_instr.init(value)
+
+				elif slot == 'S':
+					pass # TODO : string-rate params not yet handled
 
 	def release(self):
 		self._turnoff_instr()
@@ -203,45 +241,6 @@ class InstrumentRuntime:
 	clear: CsInstr_Clear = None
 	bridge: CsInstr_Bridge = None
 	ft_num: dict = field(default_factory=dict)
-
-	def format_cycle(self, ft_num=None):
-
-		uid = self.instrument.uid    
-		cycles = []
-
-		for cycle in self.instrument.qualities['cycle'].resolved:
-			if '/' in cycle:
-				cycle = float(Fraction(cycle))
-			else:
-				cycle = int(cycle)/4
-			cycles.append(cycle)
-
-		den = 1
-		nums = []
-		while True:
-			if all((v * den).is_integer() for v in cycles):
-				nums = [int(v * den) for v in cycles]
-				break
-			den += 1
-
-		den *= 4
-
-		cums = [0]
-		for val in nums[:-1]:  # Exclude last value
-			cums.append(cums[-1] + val)
-
-		ftgen_values = [i for i, count in enumerate(nums) for _ in range(count)]
-
-		orc = f'''
-gi{ uid }_ts_idx ftgen { ft_num if ft_num else self.ft_num['cycle'] }, 0, giFTGEN_SIZE, -2, {len(ftgen_values)}, { ', '.join(map(str, ftgen_values)) }
-
-gk{ uid }_ts_dur[] fillarray { ', '.join(map(str, nums)) }
-gk{ uid }_ts_start[] fillarray { ', '.join(map(str, cums)) }
-gk{ uid }_ts_den init { den }
-gk{ uid }_ts_total init { sum(nums) }
-		'''
-		return orc
-
 
 	def format_cycle(self, ft_num=None):
 		def parse_time_signatures(ts_strings: list[str]) -> list[abjad.TimeSignature]:
@@ -333,31 +332,33 @@ gk{ uid }_ts_total init { sum(nums) }
 		self.bridge = CsInstr_Bridge(self.instrument)
 		self.bridge.init()
 
-	def patch(self, previous: InstrumentRuntime):
+	def patch(self, current_runtime: InstrumentRuntime):
 		orcs = [csound_comment_line('PATCHED')]
 
 		for quality_name, values in self.instrument.qualities.items():
 			values = values.resolved
-			prev_values = previous.instrument.qualities[quality_name].resolved
-			if prev_values != values :
+			new_values = current_runtime.instrument.qualities[quality_name].resolved
+			if values != new_values :
 				if quality_name == 'cycle':
-					line = self.format_cycle(previous.ft_num['cycle'])
+					line = self.format_cycle(current_runtime.ft_num['cycle'])
 				else:
 					line = (
-						f'gi{previous.instrument.uid}_{quality_name} ftgen '
-						f'{previous.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, '
-						f'{len(values)}, {", ".join(map(str, values))}'
+						f'gi{self.instrument.uid}_{quality_name} ftgen '
+						f'{self.ft_num[quality_name]}, 0, giFTGEN_SIZE, -2, '
+						f'{len(new_values)}, {", ".join(map(str, new_values))}'
 					)
 				orcs.append(line)
-				previous.instrument.qualities[quality_name].resolved = values
+				self.instrument.qualities[quality_name].resolved = new_values
    
-		if previous.instrument.modifiers != self.instrument.modifiers:
-			previous.bridge.release()
-			self.bridge = CsInstr_Bridge(self.instrument)
-			self.bridge.init()
-		else:
-			self.bridge = previous.bridge
-
+		if current_runtime.instrument.modifiers != self.instrument.modifiers:
+			if [mod.name for mod in current_runtime.instrument.modifiers] != [mod.name for mod in self.instrument.modifiers]:
+				self.bridge.release()
+				self.bridge = CsInstr_Bridge(current_runtime.instrument)
+				self.bridge.init()
+				self.instrument.modifiers = current_runtime.instrument.modifiers
+			elif [mod.items for mod in current_runtime.instrument.modifiers] != [mod.items for mod in self.instrument.modifiers]:
+				self.bridge.patch(current_runtime)
+				self.instrument.modifiers = current_runtime.instrument.modifiers
 		emit_orc_lines(orcs)
 
 	def release(self):
@@ -387,10 +388,9 @@ def convert_instrument(runtime: InstrumentRuntime):
 
 	if state == 'release':
 		session_poems[uid].release()
-		session_poems.remove(uid)
+		del session_poems[uid]
 	elif state == 'patched':
-		previous = session_poems[uid]
-		runtime.patch(previous)
+		session_poems[uid].patch(runtime)
 	elif state == 'init':
 		runtime.init()
 		session_poems[uid] = runtime

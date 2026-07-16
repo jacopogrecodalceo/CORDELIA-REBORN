@@ -1,10 +1,7 @@
+; CORDELIA INIT: p1=1
 
-	opcode cordelia_wow, a, aJ
+	opcode cordelia_wow, a, ak
 	ain, kwet xin
-
-if kwet == -1 then
-	kwet = 1
-endif
 
 imax_del	init 3500
 

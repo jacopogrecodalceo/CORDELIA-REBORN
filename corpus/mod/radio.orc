@@ -1,7 +1,9 @@
+; CORDELIA INIT: p1=1
+
 #define cordelia_radio_low_freq_jit#jitter(500, 1/32, 1/8)#
 #define cordelia_radio_high_freq_jit#jitter(1500, 1/32, 1/8)#
 
-	opcode cordelia_radio, a, aJ
+	opcode cordelia_radio, a, ak
 ain, kwet xin
 
 if kwet == -1 then 

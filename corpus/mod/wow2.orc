@@ -1,8 +1,10 @@
+
 /*
 the original cordelia wow, i think i missed that millisecond delay was
 second.. so this way it's kind of difficult — tried to make different in wow
 */
 
+; CORDELIA INIT: p1=1
 
 	opcode cordelia_wow2, a, akk
 	ain, kfactor, kwet xin
