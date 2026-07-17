@@ -31,5 +31,7 @@ modifier_corpus_json = corpus_json_dir / 'modifier.json'
 scala_corpus_dir = corpus / 'scala'
 scala_corpus_json = corpus_json_dir / 'scala.json'
 
+intervals_corpus_json = corpus_json_dir / 'intervals.json'
+
 qualities_corpus_dir = corpus / 'qualities' 
 

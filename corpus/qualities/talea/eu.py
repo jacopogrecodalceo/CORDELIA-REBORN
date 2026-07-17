@@ -9,17 +9,17 @@ def match(items: list) -> bool:
 def main(args):
 	items = args.quality.items
 
-	args = items[1:]
-	if 'in' in args:
-		cycle = args[-1]
-		args = args[:-2]
+	items = items[1:]
+	if 'in' in items:
+		cycle = items[-1]
+		items = items[:-2]
 
-	pulses = int(args[0])
-	steps = int(args[1])
+	pulses = int(items[0])
+	steps = int(items[1])
 	
 	shift = 0
-	if len(args) == 3:
-		shift = int(args[2])
+	if len(items) == 3:
+		shift = int(items[2])
 
 	return cycle, _bjorklund(pulses, steps, shift=shift)
 

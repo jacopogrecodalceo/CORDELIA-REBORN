@@ -33,7 +33,7 @@ class Quality:
 
 	def __repr__(self):
 		if not self.resolved:
-			return f'UNRESOLVED: {self.entries!r}'
+			return f'Quality class UNRESOLVED: {self.entries!r}'
 		else:
 			return f'{self.resolved!r}'
 
@@ -41,7 +41,7 @@ class Quality:
 class Instrument:
 	name: str
 	cordelia_id: int
-	uid: str = None
+	uid: str = field(default_factory=str)
 
 	modifiers: list[Modifier] = field(default_factory=list)
 

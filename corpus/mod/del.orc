@@ -1,10 +1,10 @@
-; CORDELIA INIT: p1=i(gkBEATs), p2=.5, 4
+; CORDELIA INIT: p1=i(gkBEATs)/2*3, p2=.5, 4
 
     opcode cordelia_delay_array, a, akki
     setksmps 1
     ain, kdel_time, kfb, instances xin
 
-ain     init 0
+ain         init 0
 adel_tap    init 0
 
 idel_buf    init 10

@@ -25,22 +25,22 @@ def match(items: list) -> bool:
 @auto_config(Cycle, Talea)
 def main(args) -> Talea:
 
-	args = args.quality.items[1:]
+	items = args.quality.items[1:]
 	pulse_values = []
 	cycle = None
 	i = 0
 
-	while i < len(args):
-		token = args[i]
+	while i < len(items):
+		token = items[i]
 
 		if token == 'in':
-			if i + 1 >= len(args):
+			if i + 1 >= len(items):
 				raise ValueError("'in' requires a duration argument")
-			cycle = args[i + 1]   
+			cycle = items[i + 1]   
 			break
 
-		if token == '-' and i + 1 < len(args):
-			token = f'-{args[i + 1]}'
+		if token == '-' and i + 1 < len(items):
+			token = f'-{items[i + 1]}'
 			i += 1
 
 		v = int(token)
