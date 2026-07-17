@@ -42,7 +42,7 @@ class Scala:
 		Generic entry point for any registered construction strategy, e.g.
 		scale.build('edo', n=31) or scale.build('scala', scala_name='partch_43').
 		"""
-		builder = SCALE_BUILDERS[builder_name]
+		builder = SCALA_BUILDERs[builder_name]
 		self.values = builder(**kwargs)
 		self.values.insert(0, 1)
 		if self.values[-1] == 2:

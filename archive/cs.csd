@@ -153,6 +153,7 @@ prints("\n────────── heartbeat signal ───────�
 #include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/3-body/3-SOUL.orc"
 #include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/3-body/4-ADDONs.orc"
 #include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/2-head/envgen.orc"
+#include "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/cordelia/csound/orc/2-head/cordelia_envgen.orc"
 
 
 
@@ -164,24 +165,27 @@ prints("\n────────── heartbeat signal ───────�
 
 
 
-
-; BEGIN ORC | 05·19pm································································································································
+; BEGIN ORC | 01·31pm································································································································
 schedule "heart", 0, -1
-;       cls
-;       a 3-points function from linear segments
-gicls_atk               init sr * .005
-gicls_dur               init gienvdur - gicls_atk
-gicls_int               init 9
-gicls_intdec    init 4
-gicls_dec               init gicls_intdec / gicls_int
-gicls_sus               init .15
-gicls_intrel    init gicls_int-gicls_intdec
-gicls_rel               init gicls_intrel / gicls_int
-;-----------------------
-gicls           ftgen   0, 0, gienvdur, 7, 0, gicls_atk, 1, gicls_dur*gicls_dec, gicls_sus, gicls_dur*gicls_rel, 0
-;-----------------------
+;       LIKEAREV
+;       a 6-points function from linear segments
+girev_atk               init sr * .005
+girev_dur               init gienvdur - girev_atk
+girev_int               init 32
+girev_intdec            init 1
+girev_dec               init girev_intdec / girev_int
 
+girev_sus1              init .15
+girev_intrel1           init 3
+girev_rel1              init girev_intrel1 / girev_int
 
+girev_sus2              init .05
+girev_intrel2           init girev_int-girev_intdec-girev_intrel1
+girev_rel2              init girev_intrel2 / girev_int
+
+;-----------------------
+girev           ftgen   0, 0, gienvdur, 7, 0, girev_atk, 1, girev_dur*girev_dec, girev_sus1, girev_dur*girev_rel1, girev_sus2, girev_dur*girev_rel2, 0
+;-----------------------
 
 /* 
 ~idi di luglio 2026
@@ -191,9 +195,6 @@ coming from another synth icreated working on cordelia reborn
 
         $CORDELIA_BEGIN_INSTR(tiny)
 
-irel init idur+random(.005, -.005)
-        xtratim irel
-
 anoi fractalnoise 1/12+random(0, .005), 1
 aosc oscil3 .5+random(-.005, .005), icps
 avco vco2 1/64+random(0, .005), icps
@@ -202,111 +203,206 @@ aout sum aosc, anoi*cosseg(1, .005+random(.0095, .005), 0), avco
 aout *= idyn
 aout = aout * (.5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005)))
 
-aenv_indx       linsegr 1, idur, random(1/8, 1/24), irel, 0
-aenv                    table3 aenv_indx, ienv, 1
-aout                    *= aenv
+        $CORDELIA_END_INSTR
 
-        $CORDELIA_OUT
-        endin
 
 
 ; INIT································································································································
+gitiny_2_cycle ftgen 1001, 0, giFTGEN_SIZE, -27, 0, 0, 256, 1, 257, 0, 512, 1, 513, 0, 768, 1, 769, 0, 1024, 1, 1025, 0, 1280, 1, 1281, 0, 1536, 1, 1537, 0, 1792, 1, 1793, 0, 2048, 1, 2049, 0, 2304, 1, 2305, 0, 2560,
+1, 2561, 0, 2816, 1, 2817, 0, 3072, 1, 3073, 0, 3328, 1, 3329, 0, 3584, 1, 3585, 0, 3840, 1, 3841, 0, 4096, 1, 4097, 0, 4352, 1, 4353, 0, 4608, 1, 4609, 0, 4864, 1, 4865, 0, 5120, 1, 5121, 0, 5376, 1, 5377, 0, 5632, 
+1, 5633, 0, 5888, 1, 5889, 0, 6144, 1, 6145, 0, 6400, 1, 6401, 0, 6656, 1, 6657, 0, 6912, 1, 6913, 0, 7168, 1, 7169, 0, 7424, 1, 7425, 0, 7680, 1, 7681, 0, 7936, 1, 7937, 0, 8192, 1
 
-gitiny_1_ts_idx ftgen 1001, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0
+gitiny_2_talea ftgen 1002, 0, giFTGEN_SIZE, -2, 128, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 
+0, 0
+gitiny_2_color ftgen 1003, 0, giFTGEN_SIZE, -2, 16, 400, 400, 400, 400, 90, 90, 90, 90, 90, 90, 90, 90, 90, 120, 120, 120
+gitiny_2_dur ftgen 1004, 0, giFTGEN_SIZE, -2, 1, .5
+gitiny_2_dyn ftgen 1005, 0, giFTGEN_SIZE, -2, 1, $mf
+gitiny_2_env ftgen 1006, 0, giFTGEN_SIZE, -2, 1, girev
+gitiny_2_space ftgen 1007, 0, giFTGEN_SIZE, -2, 1, 0
 
-gktiny_1_ts_dur[] fillarray 8
-gktiny_1_ts_start[] fillarray 0
-gktiny_1_ts_den init 1
-gktiny_1_ts_total init 8
-                
+gktiny_2_color_count init -1
+gktiny_2_dur_count init -1
+gktiny_2_dyn_count init -1
+gktiny_2_env_count init -1
+gktiny_2_space_count init -1
 
-gitiny_1_talea ftgen 1002, 0, giFTGEN_SIZE, -2, 8, 1, 2, 3, 4, 5, 6, 7, 8
-gitiny_1_color ftgen 1003, 0, giFTGEN_SIZE, -2, 3, 300, 500, 200
-gitiny_1_dur ftgen 1004, 0, giFTGEN_SIZE, -2, 3, 24.0, 24.0, 16.0
-gitiny_1_dyn ftgen 1005, 0, giFTGEN_SIZE, -2, 1, $fff
-gitiny_1_env ftgen 1006, 0, giFTGEN_SIZE, -2, 1, gicls
-gitiny_1_space ftgen 1007, 0, giFTGEN_SIZE, -2, 1, 0
-
-gktiny_1_color_count init -1
-gktiny_1_dur_count init -1
-gktiny_1_dyn_count init -1
-gktiny_1_env_count init -1
-gktiny_1_space_count init -1
-
-        instr tiny_1
+        instr tiny_2
 ktalea_prev init -1
 kinit_flag  init 1
 
 kmain   chnget "heart"
 
+kphase table kmain, gitiny_2_cycle, 1
 
-kglobal_beat = kmain * gkdiv * (gktiny_1_ts_den/4)
-kcycle_pos = kglobal_beat % gktiny_1_ts_total
-
-kseg_idx    table kcycle_pos / gktiny_1_ts_total, gitiny_1_ts_idx, 1
-kphase = (kcycle_pos - gktiny_1_ts_start[kseg_idx]) / gktiny_1_ts_dur[kseg_idx]
-
-
-ktalea_len  table 0, gitiny_1_talea
+ktalea_len  table 0, gitiny_2_talea
 ktalea_idx = floor(kphase * ktalea_len) + 1
-ktalea  table ktalea_idx, gitiny_1_talea
+ktalea  table ktalea_idx, gitiny_2_talea
 
 if ktalea > 0 && ktalea != ktalea_prev then
         if kinit_flag == 1 then
-                gktiny_1_color_count = ktalea - 1
-                gktiny_1_dur_count = ktalea - 1
-                gktiny_1_dyn_count = ktalea - 1
-                gktiny_1_env_count = ktalea - 1
-                gktiny_1_space_count = ktalea - 1
+                gktiny_2_color_count = ktalea - 1
+                gktiny_2_dur_count = ktalea - 1
+                gktiny_2_dyn_count = ktalea - 1
+                gktiny_2_env_count = ktalea - 1
+                gktiny_2_space_count = ktalea - 1
                 kinit_flag = 0
         endif
 
         ; ··· color
-        kcolor_len  table 0, gitiny_1_color
-        kcolor_idx  = (gktiny_1_color_count % kcolor_len) + 1
-        kcolor      table kcolor_idx, gitiny_1_color
+        kcolor_len  table 0, gitiny_2_color
+        kcolor_idx  = (gktiny_2_color_count % kcolor_len) + 1
+        kcolor      table kcolor_idx, gitiny_2_color
         ; ··· dur
-        kdur_len  table 0, gitiny_1_dur
-        kdur_idx  = (gktiny_1_dur_count % kdur_len) + 1
-        kdur      table kdur_idx, gitiny_1_dur
+        kdur_len  table 0, gitiny_2_dur
+        kdur_idx  = (gktiny_2_dur_count % kdur_len) + 1
+        kdur      table kdur_idx, gitiny_2_dur
         ; ··· dyn
-        kdyn_len  table 0, gitiny_1_dyn
-        kdyn_idx  = (gktiny_1_dyn_count % kdyn_len) + 1
-        kdyn      table kdyn_idx, gitiny_1_dyn
+        kdyn_len  table 0, gitiny_2_dyn
+        kdyn_idx  = (gktiny_2_dyn_count % kdyn_len) + 1
+        kdyn      table kdyn_idx, gitiny_2_dyn
         ; ··· env
-        kenv_len  table 0, gitiny_1_env
-        kenv_idx  = (gktiny_1_env_count % kenv_len) + 1
-        kenv      table kenv_idx, gitiny_1_env
+        kenv_len  table 0, gitiny_2_env
+        kenv_idx  = (gktiny_2_env_count % kenv_len) + 1
+        kenv      table kenv_idx, gitiny_2_env
         ; ··· space
-        kspace_len  table 0, gitiny_1_space
-        kspace_idx  = (gktiny_1_space_count % kspace_len) + 1
-        kspace      table kspace_idx, gitiny_1_space
+        kspace_len  table 0, gitiny_2_space
+        kspace_idx  = (gktiny_2_space_count % kspace_len) + 1
+        kspace      table kspace_idx, gitiny_2_space
 
         if kspace == 0 then
                 kch = 1
                 until kch > ginchnls do
-                        schedulek "tiny", 0, kdur * gkBEATs / gkdiv, kdyn, kenv, kcolor, kch
+                        schedulek "tiny", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch
                         kch += 1
                 od
         else
-                schedulek "tiny", 0, kdur * gkBEATs / gkdiv, kdyn, kenv, kcolor, kspace
+                schedulek "tiny", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace
         endif
 
-        gktiny_1_color_count += 1
-        gktiny_1_dur_count += 1
-        gktiny_1_dyn_count += 1
-        gktiny_1_env_count += 1
-        gktiny_1_space_count += 1
+        gktiny_2_color_count += 1
+        gktiny_2_dur_count += 1
+        gktiny_2_dyn_count += 1
+        gktiny_2_env_count += 1
+        gktiny_2_space_count += 1
         ktalea_prev = ktalea
 endif
         endin
-
-schedule "tiny_1", ksmps/sr, -1
+schedule "tiny_2", 0, -1
 schedule 950.01, 0, -1, "tiny_1"
 schedule 950.02, 0, -1, "tiny_2"
 
 ; BRIDGE tiny································································································································
-        instr tiny_1_bridge
+        instr tiny_2_bridge
+ich init p4
+        xtratim giXTRATIM
+
+krel            init 0
+krel            release
+idyn            init 1
+adyn_in cosseg 0, .005, 1
+adyn_out        init 1
+
+if krel == 1 then
+        adyn_in cosseg idyn, giXTRATIM/4, 0, giXTRATIM*3/4, 0 
+        adyn_out cosseg idyn, giXTRATIM*2/3, idyn, giXTRATIM/3, 0
+endif
+
+amain_in chnget sprintf("%s_%i", "tiny", ich)
+amain_in *= adyn_in
+
+amain_out = amain_in
+
+        chnmix amain_out*adyn_out, gSmouth
+        endin
+schedule nstrnum("tiny_2_bridge")+1/1000, 0, -1, 1
+schedule nstrnum("tiny_2_bridge")+2/1000, 0, -1, 2
+
+; INIT································································································································
+gitiny_3_cycle ftgen 1008, 0, giFTGEN_SIZE, -27, 0, 0, 256, 1, 257, 0, 512, 1, 513, 0, 768, 1, 769, 0, 1024, 1, 1025, 0, 1280, 1, 1281, 0, 1536, 1, 1537, 0, 1792, 1, 1793, 0, 2048, 1, 2049, 0, 2304, 1, 2305, 0, 2560,
+1, 2561, 0, 2816, 1, 2817, 0, 3072, 1, 3073, 0, 3328, 1, 3329, 0, 3584, 1, 3585, 0, 3840, 1, 3841, 0, 4096, 1, 4097, 0, 4352, 1, 4353, 0, 4608, 1, 4609, 0, 4864, 1, 4865, 0, 5120, 1, 5121, 0, 5376, 1, 5377, 0, 5632, 
+1, 5633, 0, 5888, 1, 5889, 0, 6144, 1, 6145, 0, 6400, 1, 6401, 0, 6656, 1, 6657, 0, 6912, 1, 6913, 0, 7168, 1, 7169, 0, 7424, 1, 7425, 0, 7680, 1, 7681, 0, 7936, 1, 7937, 0, 8192, 1
+
+gitiny_3_talea ftgen 1009, 0, giFTGEN_SIZE, -2, 8, 1, 2, 3, 4, 5, 6, 7, 8
+gitiny_3_color ftgen 1010, 0, giFTGEN_SIZE, -2, 7, 200, 200, 200, 200, 100, 100, 100
+gitiny_3_dur ftgen 1011, 0, giFTGEN_SIZE, -2, 1, .5
+gitiny_3_dyn ftgen 1012, 0, giFTGEN_SIZE, -2, 1, $mf
+gitiny_3_env ftgen 1013, 0, giFTGEN_SIZE, -2, 1, girev
+gitiny_3_space ftgen 1014, 0, giFTGEN_SIZE, -2, 1, 0
+
+gktiny_3_color_count init -1
+gktiny_3_dur_count init -1
+gktiny_3_dyn_count init -1
+gktiny_3_env_count init -1
+gktiny_3_space_count init -1
+
+        instr tiny_3
+ktalea_prev init -1
+kinit_flag  init 1
+
+kmain   chnget "heart"
+
+kphase table kmain, gitiny_3_cycle, 1
+
+ktalea_len  table 0, gitiny_3_talea
+ktalea_idx = floor(kphase * ktalea_len) + 1
+ktalea  table ktalea_idx, gitiny_3_talea
+
+if ktalea > 0 && ktalea != ktalea_prev then
+        if kinit_flag == 1 then
+                gktiny_3_color_count = ktalea - 1
+                gktiny_3_dur_count = ktalea - 1
+                gktiny_3_dyn_count = ktalea - 1
+                gktiny_3_env_count = ktalea - 1
+                gktiny_3_space_count = ktalea - 1
+                kinit_flag = 0
+        endif
+
+        ; ··· color
+        kcolor_len  table 0, gitiny_3_color
+        kcolor_idx  = (gktiny_3_color_count % kcolor_len) + 1
+        kcolor      table kcolor_idx, gitiny_3_color
+        ; ··· dur
+        kdur_len  table 0, gitiny_3_dur
+        kdur_idx  = (gktiny_3_dur_count % kdur_len) + 1
+        kdur      table kdur_idx, gitiny_3_dur
+        ; ··· dyn
+        kdyn_len  table 0, gitiny_3_dyn
+        kdyn_idx  = (gktiny_3_dyn_count % kdyn_len) + 1
+        kdyn      table kdyn_idx, gitiny_3_dyn
+        ; ··· env
+        kenv_len  table 0, gitiny_3_env
+        kenv_idx  = (gktiny_3_env_count % kenv_len) + 1
+        kenv      table kenv_idx, gitiny_3_env
+        ; ··· space
+        kspace_len  table 0, gitiny_3_space
+        kspace_idx  = (gktiny_3_space_count % kspace_len) + 1
+        kspace      table kspace_idx, gitiny_3_space
+
+        if kspace == 0 then
+                kch = 1
+                until kch > ginchnls do
+                        schedulek "tiny", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch
+                        kch += 1
+                od
+        else
+                schedulek "tiny", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace
+        endif
+
+        gktiny_3_color_count += 1
+        gktiny_3_dur_count += 1
+        gktiny_3_dyn_count += 1
+        gktiny_3_env_count += 1
+        gktiny_3_space_count += 1
+        ktalea_prev = ktalea
+endif
+        endin
+schedule "tiny_3", 0, -1
+schedule 950.03, 0, -1, "tiny_1"
+schedule 950.04, 0, -1, "tiny_2"
+
+; BRIDGE tiny································································································································
+        instr tiny_3_bridge
 ich init p4
         xtratim giXTRATIM
 
@@ -328,13 +424,10 @@ amain_out = amain_in
 
         chnmix amain_out*adyn_out, gSmouth[ich-1]
         endin
-schedule nstrnum("tiny_1_bridge")+1/1000, 0, -1, 1
-schedule nstrnum("tiny_1_bridge")+2/1000, 0, -1, 2
+schedule nstrnum("tiny_3_bridge")+1/1000, 0, -1, 1
+schedule nstrnum("tiny_3_bridge")+2/1000, 0, -1, 2
 
-; END ORC | 05·19pm································································································································
-
-
-
+; END ORC | 01·31pm································································································································
 
 
 

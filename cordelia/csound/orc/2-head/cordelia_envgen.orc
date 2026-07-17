@@ -3,49 +3,46 @@ gisotrap_seg		init gienvdur-(gisotrap_ramp*2)
 ;-----------------------
 gisotrap		ftgen	0, 0, gienvdur, 7, 0, gisotrap_ramp, 1, gisotrap_seg, 1, gisotrap_ramp, 0
 
-	opcode cordelia_envgen, a, ii
-	idur, iftenv	xin
-	
-ifenvmod	init	floor(iftenv)-iftenv
-iftenvreal	abs	floor(iftenv)
-iexists 	ftexists iftenvreal
+	opcode cordelia_envgen, a, iii
+	ienv, idur, irel	xin
 
-if iexists != 1 || iftenvreal == 0 then
-	iftenvreal = gisotrap
+ift_num			abs floor(ienv)
+iexists 			ftexists ift_num
+
+if iexists != 1 || ift_num == 0 then
+	ift_num = gisotrap
 	printks "WARNING ENVGEN DOESN'T EXIST\n", 1/2
 endif
 
-idur_env init gienvdur-1
-imax init 1
+ift_mod			init	ift_num-ienv
+irel_jit			floor random(0, 128)
 
-if	ifenvmod == 0 then
-
-	if	iftenv > 0 then
-		alinenv	linseg 0, idur, idur_env
+if	ift_mod == 0 then
+	if	ienv > 0 then
+		aphase	linsegr 0, idur, gienvdur-irel_jit, irel, gienvdur
 	else
-		alinenv	linseg idur_env, idur, 0
+		aphase	linsegr gienvdur, idur, irel_jit, irel, 0
 	endif
 
 else 
 
-	iatk	abs ifenvmod
+	iatk	abs ift_mod
+	if	ienv > 0 then
 
-	if	iftenv > 0 then
-
+		
 		ires	init 0
 		indx	init 0
-		ilast	init idur-iatk
-		
-		until ires==imax do
-			ires	table3 indx, abs(iftenv)
+		until ires==1 do
+			ires	table indx, ift_num
 			ires 	= round(ires * 1000) / 1000
 			indx	+= 1
 		od
 
+		ilast	init idur-iatk
 		if	iatk<ilast then
-			alinenv	linseg 0, iatk, indx, ilast, idur_env
+			aphase	linsegr 0, iatk, indx, ilast, gienvdur-irel_jit, irel, gienvdur
 		else
-			alinenv	linseg 0, idur, idur_env
+			aphase	linsegr 0, idur, gienvdur-irel_jit, irel, gienvdur
 		endif
 
 	else
@@ -54,27 +51,23 @@ else
 		indx	init 0
 		ilast	init idur-iatk
 			
-		until ires==imax do
-			ires	table3 indx, abs(iftenv)
+		until ires==1 do
+			ires	table indx, ift_num
 			ires	= round(ires * 1000) / 1000
 			indx	+= 1
 		od
 		
 		if	iatk<ilast then
-			alinenv	linseg idur_env, ilast, indx, iatk, 0
+			aphase	linsegr gienvdur, ilast, indx, iatk, 0
 		else
-			alinenv	linseg idur_env, idur, 0
+			aphase	linsegr gienvdur, idur, 0
 		endif
 
 	endif
 
 endif
 
-
-	aenv	table3 alinenv, iftenvreal
-
-	;idec	init 295 / sr
-	;aenv	*= cosseg:a(0, idec, 1, idur-(idec*2), 1, idec, 0)
+	aenv	table3 aphase, ift_num
 
 	xout aenv
 	endop

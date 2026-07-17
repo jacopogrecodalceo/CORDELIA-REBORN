@@ -23,6 +23,7 @@ class Quality:
 	def __init__(self):
 		self.entries: list[QualityEntry] = []
 		self.resolved = []
+		self.dirty = False
 
 	def add(self, deduced, raws=None):
 		self.entries.append(QualityEntry(deduced=deduced, raws=raws))

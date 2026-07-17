@@ -7,6 +7,7 @@
 
 #define once(infill)		#once(fillarray($infill))#
 
+
 ; Global serial port handle
 /* gicordelia_serial_handle init -1
 gicordelia_serial_dac_max init 65535
@@ -32,14 +33,7 @@ icps		init p6
 ich		init p7
 #
 
-#define CORDELIA_QUALITIEs(instr_name) #
-Sinstr	init "$instr_name"
-idur		init abs(p3)
-idyn		init p4
-ienv		init p5
-icps		init p6
-ich		init p7
-#
+
 
 #define cps_hi_limit(hi_freq) #
 until icps < $hi_freq do
@@ -52,27 +46,15 @@ od
 	$params($start_instr_name)
 #
 
-#define CORDELIA_BEGIN_INSTR(instr_name) #
-	instr $instr_name
-	$CORDELIA_QUALITIEs($instr_name)
-#
 #define env_gen #aout *= envgen(idur_var, ienv)#
-#define CORDELIA_ENV #aout *= envgen(idur_var, ienv)#
-
 #define channel_mix #chnmix aout, sprintf("%s_%i", Sinstr, ich)#
-#define CORDELIA_OUT #chnmix aout, sprintf("%s_%i", Sinstr, ich)#
-
 #define end_instr #
 	$env_gen
 	$channel_mix
 	endin
 #
 
-#define CORDELIA_END_INSTR #
-	$CORDELIA_ENV
-	$CORDELIA_OUT
-	endin
-#
+
 
 
 #define sample_instr_out #

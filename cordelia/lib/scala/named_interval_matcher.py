@@ -1,12 +1,11 @@
 # litchi/lib/tuning/named_interval_matcher.py
 
+from cordelia.registry.data import data
 from dataclasses import dataclass
 from decimal import Decimal
 from fractions import Fraction
-import json
-from cordelia.path import intervals_corpus_json
 
-INTERVAL_NAMEs = json.load(intervals_corpus_json)
+INTERVAL_NAMEs = data['interval']
 
 @dataclass
 class NamedIntervalMatch:

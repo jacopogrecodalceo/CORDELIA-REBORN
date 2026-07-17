@@ -8,14 +8,18 @@ import abjad
 TARGET_DURATION = abjad.Duration(64, 4)
 TARGET_LENGTH = 8192
 
-
 def parse_time_signatures(ts_strings: list[str]) -> list[abjad.TimeSignature]:
 	"""Turn shorthand strings ('8', '7/8') into TimeSignature objects, defaulting to /4."""
-	return [
-		abjad.TimeSignature.from_string(ts if "/" in ts else f"{ts}/4")
-		for ts in ts_strings
-	]
+	parsed = []
+	ts_len = len(ts_strings)
+	for ts in ts_strings:
+		if "/" in ts:
+			ts = Fraction(ts)*ts_len
+		else:
+			ts = Fraction(f"{ts}/4")*ts_len	
+		parsed.append(abjad.TimeSignature((ts.numerator, ts.denominator)))
 
+	return parsed
 
 def build_segments(
 	signatures: list[abjad.TimeSignature], target: abjad.Duration

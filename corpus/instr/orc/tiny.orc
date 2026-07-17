@@ -6,20 +6,17 @@ coming from another synth icreated working on cordelia reborn
 
 	$CORDELIA_BEGIN_INSTR(tiny)
 
-irel init idur+random(.005, -.005)
-	xtratim irel
+inoi_type 	random 0, 2
+anoi 			fractalnoise 1/12, inoi_type
+aosc 			oscil3 1/2, icps
+avco 			vco2 1/64, icps
 
-anoi fractalnoise 1/12+random(0, .005), 1
-aosc oscil3 .5+random(-.005, .005), icps
-avco vco2 1/64+random(0, .005), icps
+anoi_env		cosseg 1, .005+random(.0095, .005), 0
+aout 			sum aosc, anoi*anoi_env, avco
 
-aout sum aosc, anoi*cosseg(1, .005+random(.0095, .005), 0), avco
-aout *= idyn
-aout = aout * (.5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005)))
+aout 			*= idyn
+avib			= .5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005))
+aout 			= aout * avib
 
-aenv_indx	linsegr 1, idur, random(1/8, 1/24), irel, 0
-aenv 			table3 aenv_indx, ienv, 1
-aout 			*= aenv
+	$CORDELIA_END_INSTR
 
-	$CORDELIA_OUT
-	endin

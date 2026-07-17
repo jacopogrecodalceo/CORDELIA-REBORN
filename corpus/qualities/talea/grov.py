@@ -12,69 +12,61 @@ def main(args):
 	#UNRESOLVED: [QualityEntry(deduced=[1, 0, 1, 1, 1, 1, 1, 1], raws=['eu', '7', '8', 'in', '2'])] ['grov', '1']
 	prev_talea = args.instrument.qualities['talea'].entries[-1].deduced
 	args.instrument.qualities['talea'].entries[-1].deduced = list(expand(prev_talea, grooves=[float(Fraction(i)) for i in items]))
+	args.instrument.qualities['talea'].dirty = True
 
-def expand(pattern, grooves, target_length=64):
+def expand(pattern, grooves, target_length=128, curve=0.5):
 	"""
 	Expand binary pattern to target length by stretching each value into a block.
-	Groove shifts the position of 1s within their blocks.
-	
+	Groove shifts the position of 1s within their step, in continuous space,
+	rounded to a sample index only at the end. The first active step stays
+	straight (no groove) so it can act as the anchor the groove is felt against.
+
 	Args:
 		pattern: list of 0s and 1s e.g. [1, 0, 1, 0]
-		target_length: total output length (default 512)
-		groove: -1 to 1, shifts 1s earlier (negative) or later (positive)
-	
+		grooves: list of groove values in [-1, 1], cycled per active step
+		target_length: total output length (default 64)
+		curve: response curve exponent applied to groove magnitude before
+			it's mapped to an offset. curve < 1 makes low groove values
+			more audible sooner (expansive); curve > 1 makes low values
+			more subtle and only "opens up" near the extremes (compressive);
+			curve == 1 is the original linear response.
+
 	Returns:
 		list of 0s and 1s of length target_length
 	"""
 	pattern_len = len(pattern)
-	
-	# Size of each block
-	block_size = target_length // pattern_len
-	remainder = target_length % pattern_len
-	
-	result = []
-	len_grooves = len(grooves)
-	index = 0
+	step_width = target_length / pattern_len
+	grooves_len = len(grooves)
+
+	result = [0] * target_length
+	groove_index = 0
+	first_hit_seen = False
+
 	for i, val in enumerate(pattern):
-		# Calculate block size (distribute remainder to first few blocks)
-		current_block_size = block_size + (1 if i < remainder else 0)
+		if val != 1:
+			continue
 
-		if val == 1:
-				if index == 0:
-					index += 1
-					continue
-				groove = grooves[index%len_grooves]
-				# Position of the 1 within the block
-				# groove=-1: 1 at the start of the block (rushed)
-				# groove=0: 1 in the middle of the block (straight)
-				# groove=1: 1 at the end of the block (laid back)
-				
-				# Calculate position based on groove
-				if groove == 0:
-					pos = current_block_size // 2  # middle
-				elif groove < 0:
-					# Shift towards beginning
-					shift = abs(groove) * (current_block_size // 2)
-					pos = max(0, int(current_block_size // 2 - shift))
-				else:  # groove > 0
-					# Shift towards end
-					shift = groove * (current_block_size // 2)
-					pos = min(current_block_size - 1, int(current_block_size // 2 + shift))
-				
-				# Create block with 1 at calculated position
-				block = [0] * current_block_size
-				block[pos] = 1
-				result.extend(block)
-				index += 1
+		step_start = i * step_width
+		step_end = (i + 1) * step_width
+		nominal = step_start + step_width / 2
+
+		if not first_hit_seen:
+			# anchor: no groove applied
+			pos = 0
+			first_hit_seen = True
 		else:
-				# All zeros block
-				result.extend([0] * current_block_size)
-	
-	# Trim or pad to exact target length
-	if len(result) > target_length:
-		result = result[:target_length]
-	elif len(result) < target_length:
-		result.extend([0] * (target_length - len(result)))
-	
-	return result
+			groove = grooves[groove_index % grooves_len]
+			groove_index += 1
 
+			# shape the response curve, preserving sign
+			shaped_groove = (abs(groove) ** curve) * (1 if groove >= 0 else -1)
+
+			offset = shaped_groove * (step_width / 2)
+			pos = round(nominal + offset)
+
+		# clamp so a grooved hit can't spill into a neighbouring step
+		pos = max(int(step_start), min(int(step_end) - 1, pos))
+
+		result[pos] = 1
+
+	return result

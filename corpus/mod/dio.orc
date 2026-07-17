@@ -11,7 +11,7 @@ isaturation init 1.25
 inlp        init 1
 aout        diode_ladder ain, kfreq, kq*15, inlp, isaturation
 
-kdyn_comp   pow (kfreq / giNYQUIST), -0.15
+kdyn_comp   pow (kfreq / giNYQUIST), -0.45
 aout        *= kdyn_comp
 
     xout aout

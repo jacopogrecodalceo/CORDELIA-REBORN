@@ -52,8 +52,9 @@ class InstrumentRuntime:
 		for quality_name, values in self.instrument.qualities.items():
 			values = values.resolved
 			new_values = current_runtime.instrument.qualities[quality_name].resolved
-			if values == new_values:
+			if values == new_values and not self.instrument.qualities[quality_name].dirty:
 				continue
+
 			self.instrument.qualities[quality_name].resolved = new_values
 
 			if quality_name == 'cycle':

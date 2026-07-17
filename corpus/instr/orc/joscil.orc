@@ -9,7 +9,8 @@ $start_instr(joscil)
 	iratio = icps / irootnote2cps
 
 	; joscil-01  to 21
-
+	inote += 1 ; adjust
+	
 	if inote < 10 then
 		Snote sprintf "0%i", inote
 	else
@@ -62,7 +63,8 @@ $start_instr(joscil)
 
 	aout		= ain + acoda
 
-	aout moogladder2 aout*$dyn_var, limit(20$k-((1-$dyn_var)*19.5$k)+icps*idyn, 50, 20$k), random:i(0, 1/9)
+	aout diode_ladder aout*$dyn_var, limit(20$k-((1-$dyn_var)*19.5$k)+icps*idyn, 50, 20$k), random:i(1/9, 1/3)
+	aout *= 2.5
 	$dur_var(10)
 $end_instr
 

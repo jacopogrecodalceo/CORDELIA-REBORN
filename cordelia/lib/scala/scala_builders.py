@@ -14,7 +14,7 @@ touching Scale itself.
 from decimal import Decimal
 from fractions import Fraction
 
-from cordelia.registry import data
+from cordelia.registry.data import data
 
 def build_edo(n: int) -> list:
 	"""Equal division of the octave into n steps."""

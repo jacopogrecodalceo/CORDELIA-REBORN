@@ -7,7 +7,6 @@ gSFAREWELLs[] fillarray \
 "Farewell; be trusty, and I'll quit thy pains.", \
 "Farewell; commend me to thy mistress."
 
-
 	seed 0
 	instr SENSE_KEYBOARD_TOUCHEs
 ilen			lenarray gSFAREWELLs
