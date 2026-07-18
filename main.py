@@ -19,8 +19,8 @@ from cordelia.console import console
 
 from cordelia.const import (
 	SHORT_REST_AFTER_INIT,
-	UDP_PORTS,
 	QUERY_UDP_WHILE_SLEEP_TIME,
+	UDP_PORTs,
 )
 from config.options import flags
 from cordelia.registry import orc_queue
@@ -55,18 +55,21 @@ def _udp_thread_fn(worker: UDPWorker) -> None:
 			continue
 		direction, msg = item
 		logger.debug(f"udp | {direction} | {msg!r}")
-		try:
-			pending_poems = []
-			for line in parse(msg):
-				poem = transform(line)
-				deduce(poem)
-				poem.process()
-				pending_poems.append(poem)
-			session_poems = compare(pending_poems)
-			learn(session_poems)
-			offer(session_poems)
-		except Exception as e:
-			logger.exception(f"udp | pipeline error: {e}")
+		if direction == 'CORDELIA':
+			try:
+				pending_poems = []
+				for line in parse(msg):
+					poem = transform(line)
+					deduce(poem)
+					poem.process()
+					pending_poems.append(poem)
+				session_poems = compare(pending_poems)
+				learn(session_poems)
+				offer(session_poems)
+			except Exception as e:
+				logger.exception(f"udp | pipeline error: {e}")
+		if direction == 'CSOUND':
+			orc_queue.put('score', msg)
 
 
 def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThread) -> None:
@@ -96,7 +99,7 @@ def main() -> None:
 
 	cs, pt = _build_csound()
 
-	worker = UDPWorker(UDPRouter(UDP_PORTS))
+	worker = UDPWorker(UDPRouter(UDP_PORTs))
 	worker.start()
 
 	threads = [

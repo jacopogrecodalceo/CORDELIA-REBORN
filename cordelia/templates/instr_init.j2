@@ -16,9 +16,8 @@ kmain   chnget "heart"
 kphase table kmain, gi{{ instrument.uid }}_cycle, 1
 
 ktalea_len  table 0, gi{{ instrument.uid }}_talea
-ktalea_idx = floor(kphase * ktalea_len) + 1
+ktalea_idx = kphase + 1
 ktalea  table ktalea_idx, gi{{ instrument.uid }}_talea
-
 if ktalea > 0 && ktalea != ktalea_prev then
 	if kinit_flag == 1 then
 		{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
@@ -37,11 +36,11 @@ if ktalea > 0 && ktalea != ktalea_prev then
 	if kspace == 0 then
 		kch = 1
 		until kch > ginchnls do
-			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch
+			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch, "{{ instrument.uid }}"
 			kch += 1
 		od
 	else
-		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace
+		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace, "{{ instrument.uid }}"
 	endif
 
 	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}

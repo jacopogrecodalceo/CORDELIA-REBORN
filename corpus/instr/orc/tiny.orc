@@ -4,7 +4,9 @@ coming from another synth icreated working on cordelia reborn
 è rimasto nel cuore, come argilla secca sugli scogli
 */
 
-	$CORDELIA_BEGIN_INSTR(tiny)
+	instr tiny
+	$CORDELIA_QUALITIEs
+	$CORDELIA_RELEASE
 
 inoi_type 	random 0, 2
 anoi 			fractalnoise 1/12, inoi_type

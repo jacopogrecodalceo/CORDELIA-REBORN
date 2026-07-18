@@ -25,10 +25,8 @@ class InstrumentRuntime:
 	ft_num: dict[str, int] = field(default_factory=dict)
 
 	def _cycle_ftgen_line(self, ft_num: int | None = None) -> str:
-		ts = self.instrument.qualities['cycle'].resolved
 		return format_cycle_ftgen(
-			uid=self.instrument.uid,
-			ts_strings=ts,
+			instrument=self.instrument,
 			ft_num=ft_num if ft_num else self.ft_num['cycle'],
 		)
 

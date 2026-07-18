@@ -1,3 +1,4 @@
+from decimal import Decimal
 import re
 import abjad
 from pathlib import Path
@@ -27,7 +28,7 @@ def main(args):
 		origin_pitch = abjad.NamedPitch(origin.replace('.', ','))
 		degrees = items[2:]
 	else:
-		origin_pitch = abjad.NamedPitch('c')
+		origin_pitch = abjad.NamedPitch('b,')
 		degrees = items[1:]
 	origin_pitch += abjad.NumberedInterval(12)
 
@@ -35,13 +36,28 @@ def main(args):
 	freqs = get_frequencies(scala_path.read_text())
 	scala_freqs = expand_to_range(freqs)
 
+
+	flatten_degrees = flatten(degrees)
 	res = []
-	for degree in degrees:
+	for degree in flatten_degrees:
 		st = interval_to_semitones(degree)
 		target = origin_pitch+abjad.NumberedInterval(st)
-		res.append(find_nearest(target.hertz(), scala_freqs))
+		nearest = find_nearest(target.hertz(), scala_freqs)
+		res.append(Decimal(nearest))
 
 	return res
+
+def flatten(nested_list):
+	"""Recursively flatten a list of arbitrary depth into a single flat list."""
+	result = []
+
+	for item in nested_list:
+		if isinstance(item, list):
+			result.extend(flatten(item))
+		else:
+			result.append(item)
+
+	return result
 
 def interval_to_semitones(interval_name):
 	"""Return total semitones for a simple or compound interval, e.g. '9' -> 14, '-10m' -> -15."""

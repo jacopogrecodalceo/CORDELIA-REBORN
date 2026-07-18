@@ -1,15 +1,7 @@
 
 	instr ariel_rawer
-
-idur	init p3
-
-idyn	init p4
-ienv	init p5
-icps 	init p6
-ich	init p7
-imod	init ich % 1
-
-	schedule nstrnum("ariel_rawer_instr")+ich/1000 + imod, 0, idur, idyn, ienv, icps, ich
+	$CORDELIA_QUALITIEs(ariel_rawer_instr)
+	schedule nstrnum(Sinstr)+ich/1000, 0, idur, idyn, ienv, icps, ich, Sinstr_out
 	turnoff
 	endin
 

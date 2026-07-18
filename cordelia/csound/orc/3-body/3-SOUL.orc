@@ -42,8 +42,7 @@ asat		tanh gksoul_tape_drive * aout
 asat 		tone asat, 9500
 aout		= (1 - gksoul_tape_wet) * aout + gksoul_tape_wet * asat
 
-;aout dcblock aout
-aout	butterhp aout, 20
+aout		butterhp aout, 20
 
 	outch gioffch+ich+1, aout
 

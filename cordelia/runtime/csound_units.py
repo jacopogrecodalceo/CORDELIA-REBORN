@@ -94,7 +94,7 @@ class CsInstr_Clear(CsoundInstrClass):
 		for ch in range(1, CHANNELs + 1):
 			num = pool.clear_instr.alloc()
 			self.nums_allocated.append(num)
-			orcs.append(f'schedule {CLEAR_INSTRUMENT_NUM + num*10e-3}, 0, -1, "{self.instrument.name}_{ch}"')
+			orcs.append(f'schedule {CLEAR_INSTRUMENT_NUM + num*10e-3}, 0, -1, "{self.instrument.uid}_{ch}"')
 		emit_orc_lines(orcs)
 
 	def release(self) -> None:

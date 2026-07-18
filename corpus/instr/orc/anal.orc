@@ -1,9 +1,10 @@
-	$start_instr(anal)
+	$CORDELIA_BEGIN_INSTR(anal)
+	$CORDELIA_RELEASE
 
 imode		init 16
 inyx		init .25
 
-kpw			abs jitter(1, gkBEATf/4, gkBEATf)
+kpw		abs jitter(1, gkBEATf/4, gkBEATf)
 kphs		abs jitter(1, gkBEATf/4, gkBEATf)
 kndx		samphold jitter(1, gkBEATf/4, gkBEATf), metro:k(gkBEATf*8)
 kvibf		= lfo(icps/100, random:i(2.5, 4.5))
@@ -18,9 +19,9 @@ itun_len	init ilen - ioff
 kcps		tab (abs(kndx)*itun_len)+ioff, i(gktuning)
 
 kcps		= portk(icps * kcps, .025)+kvibf
-aout		vco2 $dyn_var*abs(kvibd), kcps, imode, kpw, kphs, inyx
+aout		vco2 idyn*abs(kvibd), kcps, imode, kpw, kphs, inyx
 
-	$dur_var(10)
-	$end_instr
+	$CORDELIA_END_INSTR
+
 
 

@@ -1,13 +1,13 @@
 /* -------------------------------------------------------------------------- */
 /*                               CORDELIA REBORN                              */
 /* -------------------------------------------------------------------------- */
-#define CORDELIA_QUALITIEs(instr_name) #
-Sinstr	init "$instr_name"
-idur		init abs(p3)
-idyn		init p4
-ienv		init p5
-icps		init p6
-ich		init p7
+#define CORDELIA_QUALITIEs #
+idur			init abs(p3)
+idyn			init p4
+ienv			init p5
+icps			init p6
+ich			init p7
+Sinstr_out	init p8
 #
 
 #define CORDELIA_RELEASE #
@@ -24,13 +24,16 @@ irel 		init idur*irel_jit
 aout *= cordelia_envgen(ienv, idur, irel)
 #
 #define CORDELIA_OUT #
-chnmix aout, sprintf("%s_%i", Sinstr, ich)
+chnmix aout, sprintf("%s_%i", Sinstr_out, ich)
+#
+
+#define CORDELIA_SCHEDULE(instr_name) #
+	schedule $instr_name, 0, idur, idyn, ienv, icps, ich, Sinstr_out
 #
 
 #define CORDELIA_BEGIN_INSTR(instr_name) #
 	instr $instr_name
 $CORDELIA_QUALITIEs($instr_name)
-$CORDELIA_RELEASE
 #
 
 #define CORDELIA_END_INSTR #
@@ -49,3 +52,10 @@ od
 aout buthp aout, 20
 #
 
+#define CORDELIA_SAMP_OUT #
+indx				init ich - 1
+ifile_nchnls	filenchnls Spath
+ilimit			max ifile_nchnls, ginchnls
+ifile_ch   		init (indx % (ifile_nchnls <= ginchnls ? ifile_nchnls : ginchnls)) + 1
+ain 				= ains[ifile_ch-1]
+#
