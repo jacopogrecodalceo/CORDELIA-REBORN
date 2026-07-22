@@ -21,7 +21,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Char)
+#@auto_config(Char)
 def main(args):
 	#items = quality.items
 	return 'stubborn'

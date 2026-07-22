@@ -7,13 +7,7 @@ from loguru import logger
 
 from cordelia.csound.run import build_orchestra, init
 
-from cordelia.pipeline.parser import parse
-from cordelia.pipeline.transformer import transform
-from cordelia.pipeline.deducer import deduce
-from cordelia.pipeline.comparer import compare
-from cordelia.pipeline.learner import learn
-from cordelia.pipeline.converter import offer
-
+from cordelia.pipeline import compile
 from cordelia.udp import UDPRouter, UDPWorker
 from cordelia.console import console
 
@@ -53,23 +47,15 @@ def _udp_thread_fn(worker: UDPWorker) -> None:
 		item = worker.get(timeout=.5)
 		if not item:
 			continue
-		direction, msg = item
-		logger.debug(f"udp | {direction} | {msg!r}")
+		direction, message = item
+		logger.debug(f"udp | {direction} | {message!r}")
 		if direction == 'CORDELIA':
 			try:
-				pending_poems = []
-				for line in parse(msg):
-					poem = transform(line)
-					deduce(poem)
-					poem.process()
-					pending_poems.append(poem)
-				session_poems = compare(pending_poems)
-				learn(session_poems)
-				offer(session_poems)
+				compile(message)
 			except Exception as e:
 				logger.exception(f"udp | pipeline error: {e}")
 		if direction == 'CSOUND':
-			orc_queue.put('score', msg)
+			orc_queue.put('score', message)
 
 
 def _scheduler_thread_fn(cs: ctcsound.Csound, pt: ctcsound.CsoundPerformanceThread) -> None:

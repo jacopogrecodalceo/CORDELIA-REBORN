@@ -20,50 +20,53 @@ _SPACE: WS_INLINE
 
 SYM: /\+|\-|\*|\/|<|>|=|\./
 
-INVOCATION_KIND: "."|":"
+MODIFIER_KIND: "."|":"
 
-cordelia_id: ("#" NUMBER)
+?voice_id: ("#" NUMBER)
 
-epigraph: "@" NAME
+header: "@" NAME voice_id? 
 
-?poem: phrase | statement
+?node: instrument | variable
 
 // ─────────────────────────────────────────────
 // MAIN ENTRIEs
 // ─────────────────────────────────────────────
 
-statement: epigraph _SPACE verse+
+variable: header _SPACE verse+
 
-phrase:  epigraph cordelia_id? invocation* ((_DELIM | _NL) verse)+
-
-// ─────────────────────────────────────────────
-// VERSE
-// ─────────────────────────────────────────────
-
-verse: foot (_SPACE foot)*
+instrument:  header modifier* ((_DELIM | _NL) verse)+
 
 // ─────────────────────────────────────────────
-// invocation are modifiers aka FXs
+// verse
 // ─────────────────────────────────────────────
 
-invocation: _NL* INVOCATION_KIND NAME array? ("{}"|"()")?
+verse: item (_SPACE item)*
+
+// ─────────────────────────────────────────────
+// modifier are modifiers aka FXs
+// ─────────────────────────────────────────────
+
+modifier: _NL* MODIFIER_KIND NAME array? ("{}"|"()")?
 
 // ─────────────────────────────────────────────
 // STRUCTURES
 // ─────────────────────────────────────────────
 
-array: "(" _SPACE* foot (_SPACE+ foot)* _SPACE* ")"
-		| "{" _SPACE* foot (_SPACE+ foot)* _SPACE* "}"
+array: "(" _SPACE* item (_SPACE+ item)* _SPACE* ")"
+		| "{" _SPACE* item (_SPACE+ item)* _SPACE* "}"
 
 func: NAME array
 
+repeat: syllabe REPEAT*
+
+expr: syllabe (SYM syllabe)*
+
 // ─────────────────────────────────────────────
-// FEET
+// ITEM
 // ─────────────────────────────────────────────
 
-foot: repeat (SYM repeat)*
+?item: syllabe | repeat | expr
 
-?repeat: syllabe REPEAT*
 
 ?syllabe: func
 			| array

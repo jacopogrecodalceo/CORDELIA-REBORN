@@ -1,50 +1,50 @@
 
-{% for quality, values in instrument.qualities.items() if quality in ['talea', 'color', 'dur', 'dyn', 'env', 'space'] %}
-gi{{ instrument.uid }}_{{ quality }} ftgen {{ ft_num[quality] }}, 0, giFTGEN_SIZE, -2, {{ values.resolved | length }}, {{ values.resolved | join(', ') }}
+{% for quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
+gi{{ instrument.identity.uid }}_{{ quality }} ftgen {{ ft_num[quality] }}, 0, giFTGEN_SIZE, -2, {{ instrument[quality].values | length }}, {{ instrument[quality].ftgen_format() }}
 {% endfor %}
 
-{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
-gk{{ instrument.uid }}_{{ quality }}_count init -1
+{% for quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
+gk{{ instrument.identity.uid }}_{{ quality }}_count init -1
 {% endfor %}
 
-	instr {{ instrument.uid }}
+	instr {{ instrument.identity.uid }}
 ktalea_prev init -1
 kinit_flag  init 1
 
-kmain   chnget "heart"
+kmain   			chnget "heart"
 
-kphase table kmain, gi{{ instrument.uid }}_cycle, 1
+kphase          table kmain, gi{{ instrument.identity.uid }}_cycle, 1
 
-ktalea_len  table 0, gi{{ instrument.uid }}_talea
-ktalea_idx = kphase + 1
-ktalea  table ktalea_idx, gi{{ instrument.uid }}_talea
+ktalea_idx      = (kphase % gk{{ instrument.identity.uid }}_talea_num) * 512
+ktalea          table ktalea_idx, gi{{ instrument.identity.uid }}_talea
+
 if ktalea > 0 && ktalea != ktalea_prev then
 	if kinit_flag == 1 then
-		{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
-		gk{{ instrument.uid }}_{{ quality }}_count = ktalea - 1
+		{% for quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
+		gk{{ instrument.identity.uid }}_{{ quality }}_count = ktalea - 1
 		{% endfor %}
 		kinit_flag = 0
 	endif
 
-	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
+	{% for quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
 	; ··· {{ quality }}
-	k{{ quality }}_len  table 0, gi{{ instrument.uid }}_{{ quality }}
-	k{{ quality }}_idx  = (gk{{ instrument.uid }}_{{ quality }}_count % k{{ quality }}_len) + 1
-	k{{ quality }}      table k{{ quality }}_idx, gi{{ instrument.uid }}_{{ quality }}
+	k{{ quality }}_len  table 0, gi{{ instrument.identity.uid }}_{{ quality }}
+	k{{ quality }}_idx  = (gk{{ instrument.identity.uid }}_{{ quality }}_count % k{{ quality }}_len) + 1
+	k{{ quality }}      table k{{ quality }}_idx, gi{{ instrument.identity.uid }}_{{ quality }}
 	{% endfor %}
 
 	if kspace == 0 then
 		kch = 1
 		until kch > ginchnls do
-			schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch, "{{ instrument.uid }}"
+			schedulek "{{ instrument.identity.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kch, "{{ instrument.identity.uid }}"
 			kch += 1
 		od
 	else
-		schedulek "{{ instrument.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace, "{{ instrument.uid }}"
+		schedulek "{{ instrument.identity.name }}", 0, kdur * gkBEATs, kdyn, kenv, kcolor, kspace, "{{ instrument.identity.uid }}"
 	endif
 
-	{% for quality in instrument.qualities if quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
-	gk{{ instrument.uid }}_{{ quality }}_count += 1
+	{% for quality in ['color', 'dur', 'dyn', 'env', 'space'] %}
+	gk{{ instrument.identity.uid }}_{{ quality }}_count += 1
 	{% endfor %}
 	ktalea_prev = ktalea
 endif

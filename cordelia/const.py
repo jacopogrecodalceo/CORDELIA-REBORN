@@ -3,6 +3,7 @@ from datetime import datetime
 from pythonosc.udp_client import SimpleUDPClient
 from jinja2 import Environment, FileSystemLoader
 from loguru import logger
+import abjad
 
 from cordelia.helpers import calculate_cordelia_age
 import cordelia.path
@@ -23,7 +24,6 @@ CSOUND_DEVICEs = {
 	'dac': {}
 }
 
-
 CLEAR_INSTRUMENT_NUM = 950
 FTGEN_SIZE = 8192
 
@@ -31,6 +31,11 @@ REAPER_CLIENT = SimpleUDPClient(
 	"127.0.0.1",
 	8500,
 )
+
+CYCLE_TARGET_DURATION = abjad.Duration(64, 4)
+CYCLE_TARGET_LENGTH = FTGEN_SIZE
+
+TALEA_RESAMPLE_LEN = 512
 
 UDP_SIZE = 8192
 

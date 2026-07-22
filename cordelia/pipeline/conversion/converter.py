@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from functools import singledispatch
-
+from pdb import run
+from cordelia.models.types import Status
 from loguru import logger
 
-from cordelia.models.instrument import Instrument
-from cordelia.models.variable import Variable
-from cordelia.runtime.instrument import InstrumentRuntime
-
+from cordelia.models.nodes import Instrument, Variable
+from cordelia.pipeline.conversion.runtime import InstrumentRuntime, VariableRuntime
 
 class SessionRegistry:
 	"""Tracks currently-playing instrument runtimes, keyed by uid."""
@@ -28,41 +27,37 @@ class SessionRegistry:
 session_registry = SessionRegistry()
 
 
-def convert_instrument(runtime: InstrumentRuntime) -> None:
-	state = runtime.instrument.state
-	logger.debug(f'{state} {runtime.instrument}')
+def convert(runtime: InstrumentRuntime | VariableRuntime):
+	status = runtime.node.status
 
-	uid = runtime.instrument.uid
+	uid = runtime.node.identity.uid
 
-	match state:
-		case 'release':
+	match status:
+		case Status.RELEASE:
 			session_registry.get(uid).release()
 			session_registry.remove(uid)
-		case 'patched':
+		case Status.PATCHED:
 			session_registry.get(uid).patch(runtime)
-		case 'init':
+		case Status.INIT:
 			runtime.init()
 			session_registry.add(uid, runtime)
-		case _:
-			logger.debug(f'unpatched {runtime.instrument}')
-
 
 @singledispatch
-def offer_one(poem) -> None:
+def offer_one(node) -> None:
 	pass
 
 
 @offer_one.register
-def _(poem: Instrument) -> None:
-	runtime = InstrumentRuntime(instrument=poem)
-	convert_instrument(runtime)
-
+def _(node: Instrument) -> None:
+	runtime = InstrumentRuntime(node)
+	return runtime
 
 @offer_one.register
-def _(poem: Variable) -> None:
-	pass
+def _(node: Variable) -> None:
+	runtime = VariableRuntime(node)
+	return runtime
 
-
-def offer(poems: list) -> None:
-	for poem in poems:
-		offer_one(poem)
+def offer(nodes: list) -> None:
+	for node in nodes:
+		runtime = offer_one(node)
+		convert(runtime)

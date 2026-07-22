@@ -18,7 +18,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Env)
+@auto_config('env')
 def main(args):
 	items = args.quality.items
 

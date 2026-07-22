@@ -1,27 +1,22 @@
-"""
-=========================================
-
-MATCHES
--------
-	dorian        → explicit mode
-
-RETURNS
--------
-	Colores(pattern=[1,0,0,1,0,0,1,0], cycle=8)
-"""
-
 from corpus.qualities.color import *
 
-def match(items: list) -> bool:
-	if items[0] in ('hz', 'freq'):
+stage = QualityStage.REFERENCE
+
+def match(items: list):
+	if items[0] == 'freq':
 		return True
 	return False
 
-@auto_config(Color)
 def main(args):
-	items = args.quality.items
+	items = args.quality.items[1:]
+	if isinstance(items[1], list):
+		for occurrence in args.instrument.color:
+			math_op = items[0]
+			values = items[1]
+			#entry.deduced = [eval(f'{f}{math_op}{values[i%len(values)]}') for i, f in enumerate(entry.deduced)]
+			occurrence.processed = [eval(f'{f}{math_op}{values[i%len(values)]}') for i, f in enumerate(occurrence.processed)]
+	else:
+		for occurrence in args.instrument.color:
+			occurrence.processed = [eval(f'{f}{"".join(items)}') for f in occurrence.processed]
+	args.instrument.color.dirty = True
 
-	values = [f for f in items[1:] if float(f) < 17500]
-
-	# default
-	return values

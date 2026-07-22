@@ -1,0 +1,4 @@
+
+
+class Wisdom:
+   pass

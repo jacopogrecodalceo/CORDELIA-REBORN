@@ -7,7 +7,7 @@ giexpzero		init .00015		;a zero value for expseg
 
 giadjust	init 1-(gizero*ksmps)
 
-gkgain			init 2/3			;master gain for "mouth" instrument
+gkdyn			init 1;
 
 gkabstime		init 0
 
@@ -19,7 +19,6 @@ gimaxnote		init 300;s
 gienvdur		init 8192		;duration for all envelopes gen envelope tables
 gioscildur		init 16384		;duration for all envelopes gen envelope tables
 
-gkdyn			init 1
 
 gkclearchns[]		init 128
 

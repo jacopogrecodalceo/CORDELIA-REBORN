@@ -4,15 +4,17 @@ from corpus.qualities.talea import *
 stage = QualityStage.REFERENCE
 
 def match(items: list) -> bool:
-	if items[0] == 'grov':
+	if items[0] == 'grovall':
 		return True
 	return False
 
 def main(args):
 	items = args.quality.items[1:]
 
-	prev_talea = args.instrument.talea.prev
-	args.instrument.talea.prev.processed = expand_groove(prev_talea.processed, grooves=[float(Fraction(i)) for i in items], original_pattern_len=len(prev_talea.primary))
+	all_values = args.instrument.talea.values
+	args.instrument.talea.values = expand_groove(
+		all_values, grooves=[float(Fraction(i)) for i in items], original_pattern_len=len([t.primary for t in args.instrument.talea])
+	)
 	args.instrument.talea.dirty = True
 
 def expand_groove(pattern, grooves, original_pattern_len, curve=.5):

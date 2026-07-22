@@ -12,6 +12,8 @@ config = main_dir / 'config'
 adc_dev_list = config / 'adc'
 dac_dev_list = config / 'dac'
 
+grammar = core / 'grammar.lark'
+
 # corpus directories
 corpus = main_dir / 'corpus' # this is the main directory corpus
 

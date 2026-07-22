@@ -18,7 +18,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Dur)
+@auto_config('dur')
 def main(args):
 	items = args.quality.items
 	validate(items)

@@ -22,7 +22,7 @@ ich	init p4
 
 ain	chnget gSmouth[ich]
 
-aout	= ain*gkgain
+aout	= ain*gkdyn
 
 /* ihfreq			init ntof("3B")	; ~264Hz
 khq				= 1.95+jitter:k(.405, gkbeatf/48, gkbeatf)

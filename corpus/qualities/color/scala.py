@@ -13,7 +13,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Color)
+@auto_config('color')
 def main(args):
 	"""
 	e.g.

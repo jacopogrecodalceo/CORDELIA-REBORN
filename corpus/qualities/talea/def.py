@@ -1,5 +1,3 @@
-from itertools import cycle
-
 from corpus.qualities.talea import *
 
 def match(items: list) -> bool:
@@ -7,7 +5,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Cycle, Talea)
+@auto_config('cycle', 'talea')
 def main(args):
 	items = args.quality.items
 

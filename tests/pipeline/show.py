@@ -1,5 +1,5 @@
-from cordelia.pipeline.parser import parse
-from cordelia.pipeline.transformer import transform
+from cordelia.pipeline.frontend.parser import parse
+from cordelia.pipeline.frontend.transformer import transform
 from cordelia.console import console
 
 code = r"""

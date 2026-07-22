@@ -5,7 +5,7 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Cycle, Talea)
+@auto_config('cycle', 'talea')
 def main(args):
 	items = args.quality.items
 
@@ -21,17 +21,28 @@ def main(args):
 	if len(items) == 3:
 		shift = int(items[2])
 
-	return cycle, _bjorklund(pulses, steps, shift=shift)
+	return cycle, bjorklund_shift(pulses, steps, shift=shift)
 
-def _bjorklund(pulses: int, steps: int, shift: int = 0) -> list[int]:
+def _bjorklund(pulses: int, steps: int) -> list[int]:
 	if not 0 <= pulses <= steps:
 		raise ValueError(f"0 <= pulses ({pulses}) <= steps ({steps}) required")
-	
-	pattern = [1 if (i * pulses) % steps < pulses else 0 for i in range(steps)]
-	
+	if pulses == 0:
+		return [0] * steps
+
+	front = [[1] for _ in range(pulses)]
+	back = [[0] for _ in range(steps - pulses)]
+
+	while len(back) > 1:
+		pair_count = min(len(front), len(back))
+		new_front = [front[i] + back[i] for i in range(pair_count)]
+		new_back = front[pair_count:] if len(front) > pair_count else back[pair_count:]
+		front, back = new_front, new_back
+
+	return [x for group in front + back for x in group]
+
+def bjorklund_shift(pulses: int, steps: int, shift: int = 0) -> list[int]:
+	pattern = _bjorklund(pulses, steps)
 	if shift:
-		shift *= -1
 		shift %= steps
-		pattern = pattern[shift:] + pattern[:shift]
-	
+		pattern = pattern[-shift:] + pattern[:-shift]
 	return pattern

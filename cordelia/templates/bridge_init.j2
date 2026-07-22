@@ -1,4 +1,4 @@
-	instr {{ instrument.uid }}_bridge
+	instr {{ instrument.identity.uid }}_bridge
 ich init p4
 	xtratim giXTRATIM
 
@@ -13,7 +13,7 @@ if krel == 1 then
 	adyn_out cosseg idyn, giXTRATIM*2/3, idyn, giXTRATIM/3, 0
 endif
 
-amain_in chnget sprintf("%s_%i", "{{ instrument.uid }}", ich)
+amain_in chnget sprintf("%s_%i", "{{ instrument.identity.uid }}", ich)
 amain_in *= adyn_in
 
 {{ chain }}

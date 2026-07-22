@@ -22,8 +22,8 @@ def match(items: list) -> bool:
 		return True
 	return False
 
-@auto_config(Cycle, Talea)
-def main(args) -> Talea:
+@auto_config('cycle', 'talea')
+def main(args):
 
 	items = args.quality.items[1:]
 	pulse_values = []

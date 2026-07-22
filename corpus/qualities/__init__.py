@@ -1,32 +1,22 @@
-from cordelia.models.qualities import QUALITIEs
 from cordelia.errors import *
+from cordelia.models.types import QualityStage
 
-class QualityBase:
-	pass
-		
-for quality_name in QUALITIEs:
-	globals()[quality_name.capitalize()] = type(quality_name, (), {})
 
-def ensure_list(item):
-	"""Convert item to list if it's not already a list"""
-	if not isinstance(item, list):
-		return [item]
-	return item   
 
-def auto_config(*classes):
+def auto_config(*attrs):
 	def decorator(func):
 		def wrapper(args):			
 			results = func(args)
-			instrument = args.instrument
+			args.func = func
 
-			if len(classes) == 1:
-				attr_name = classes[0].__name__.lower()
-				instrument.qualities[attr_name].add(ensure_list(results), args.quality)
+			if len(attrs) == 1:
+				getattr(args.instrument, attrs[0]).add(results, args) #qualities[attr_name].add(ensure_list(results), args.quality)
 				return results
 
-			for values, cls in zip(results, classes):
-				attr_name = cls.__name__.lower()
-				instrument.qualities[attr_name].add(ensure_list(values), args.quality.items)
+			for attr_name, values in zip(attrs, results):
+				getattr(args.instrument, attr_name).add(values, args) #qualities[attr_name].add(ensure_list(results), args.quality)
 			return results
 		return wrapper
 	return decorator
+
+
