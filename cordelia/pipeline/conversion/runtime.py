@@ -2,13 +2,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from cordelia.models.nodes import Instrument, QUALITIEs, Variable
-from cordelia.const import csound_comment_line, jinja_env
+from cordelia.const import csound_comment_line, JINJA_CSOUND_EMIT_ENV
 from cordelia.registry import pool
 from cordelia.models.csound import CsInstr_Clear, CsInstr_Bridge, emit_orc_lines
 
 FT_ORDER = ['cycle', 'talea', 'color', 'dur', 'dyn', 'env', 'space']
 
-instr_template = jinja_env.get_template('instr_init.j2')
+instr_template = JINJA_CSOUND_EMIT_ENV.get_template('instr_init.j2')
 
 @dataclass
 class SharedRuntime:
@@ -37,7 +37,7 @@ class InstrumentRuntime(SharedRuntime):
 	ft_num: dict[str, int] = field(default_factory=dict)
 
 	def cycle_template(self):
-		return f'gi{self.instrument.identity.uid}_cycle ftgen {self.ft_num['cycle']}, 0, giFTGEN_SIZE, -27, {self.instrument.cycle.ftgen_format(self.instrument)}'
+		return f'gi{self.instrument.identity.uid}_cycle ftgen {self.ft_num['cycle']}, 0, giFTGEN_SIZE, -27, {self.instrument.cycle.ftgen_format()}'
 
 	def talea_template(self):
 		lines = [

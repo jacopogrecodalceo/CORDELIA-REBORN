@@ -1,8 +1,5 @@
-import numpy as np
 from dataclasses import dataclass, field
 import itertools
-from fractions import Fraction
-import math
 import abjad
 
 from cordelia.const import TALEA_RESAMPLE_LEN, CYCLE_TARGET_DURATION, CYCLE_TARGET_LENGTH
@@ -15,7 +12,6 @@ class Quality:
 	primary: list = field(default_factory=list)
 	processed: list = field(default_factory=list)
 
-
 @dataclass(slots=True)
 class SharedQuality:
 	occurrencies: list[Quality] = field(default_factory=list)
@@ -26,7 +22,7 @@ class SharedQuality:
 		quality = Quality(
 			verse=args.quality,
 			func=[args.func],
-			primary=value,
+			primary=value
 		)
 		self.occurrencies.append(quality)
 
@@ -55,21 +51,23 @@ class SharedQuality:
 		return ', '.join(map(str, self.values))
 
 
+
+
 @dataclass
 class Cycle(SharedQuality):
-   
-	def parse_time_signatures(self, ts_strings: list[str]) -> list[abjad.TimeSignature]:
+
+	def parse_signatures(self, ts_strings: list[str]) -> list[abjad.TimeSignature]:
 		"""Turn shorthand strings ('8', '7/8') into TimeSignature objects, defaulting to /4."""
 		return [
 			abjad.TimeSignature.from_string(ts if "/" in ts else f"{ts}/4")
 			for ts in ts_strings
 		]
 
-	def build_segments(self, 
-		signatures: list[abjad.TimeSignature], target: abjad.Duration
+	def segment_cycle_to_target(
+		self, signatures: list[abjad.TimeSignature], target: abjad.Duration
 	) -> tuple[list[abjad.Duration], list[abjad.TimeSignature]]:
 		"""Cycle through signatures, accumulating durations until target is reached,
-		then append the overshoot as a final partial segment."""
+		then trim the final segment so the total lands exactly on target."""
 		sig_cycle = itertools.cycle(signatures)
 		segments: list[abjad.Duration] = []
 		time_sigs: list[abjad.TimeSignature] = []
@@ -84,13 +82,9 @@ class Cycle(SharedQuality):
 		overshoot = total - target
 		if overshoot > abjad.Duration(0):
 			segments[-1] -= overshoot
-			time_sigs[-1] = abjad.TimeSignature(((segments[-1]).numerator, (segments[-1]).denominator))
-			total -= overshoot
-
-		#used.append(sig)	used.append(next(sig_cycle))
+			time_sigs[-1] = abjad.TimeSignature((segments[-1].numerator, segments[-1].denominator))
 
 		return segments, time_sigs
-
 
 	def distribute_remainder(self, values: list[float], target_sum: int) -> list[int]:
 		"""Largest remainder method: floor each value, then hand out the
@@ -107,80 +101,31 @@ class Cycle(SharedQuality):
 
 		return result
 
-	""" def compute_talea_y_values(self, instrument, used_signatures, segments):
-		y_values = []
-		count = 0
-
-		taleae = [quality.primary for quality in self.occurrencies]
-		talea_original_len = sum(len(t) for t in taleae)
-		num_of_taleae = len(instrument.talea)
-		for index, (sig, seg) in enumerate(zip(used_signatures, segments)):
-			ratio = Fraction(float(sig.duration()) / float(seg)).limit_denominator()
-			prev_count = count
-			count += len(taleae[index % num_of_taleae])
-			y_start = prev_count % talea_original_len
-			y_end = count % talea_original_len
-			if y_end == 0 and count > 0:
-				y_end = talea_original_len
-			y_values.append((math.floor(ratio * y_start), math.floor(ratio * y_end)))
-		return y_values """
-
-
-
-	def make_ts_breakpoints(self, instrument) -> list:
-		"""Build a GEN -25-style breakpoint list (x0, 0, x1, y, x0, 0, x1, y, ...)
-		mapping normalized durations to their time-signature ratio."""
+	def build_breakpoints(self, scale: float) -> list:
+		"""Build a flat GEN-style breakpoint list (x0, y0, x1, y1, ...) where each
+		x marks a segment boundary and y is that segment's index in the cycle."""
 		ts_strings = [c.processed for c in self.occurrencies]
+		signatures = self.parse_signatures(ts_strings)
+		segments, _ = self.segment_cycle_to_target(signatures, CYCLE_TARGET_DURATION)
 
-		signatures = self.parse_time_signatures(ts_strings)
-		#list[abjad.TimeSignature]
-		segments, time_sigs = self.build_segments(signatures, CYCLE_TARGET_DURATION)
-
-		total_duration = sum(segments)
-		scaled = [float(seg) * CYCLE_TARGET_LENGTH / float(total_duration) for seg in segments]
-		x_values = self.distribute_remainder(scaled, CYCLE_TARGET_LENGTH)
-
-		y_values = self.compute_talea_y_values(instrument, time_sigs, segments)
-		""" count = 0
-		entries_len = len(instrument.qualities['talea'].entries)
-		talea_resolved_len = len(instrument.qualities['talea'].resolved)
-		for index, (sig, seg) in enumerate(zip(used_signatures, segments)):
-			ratio = Fraction(float(sig.duration()) / float(seg)).limit_denominator()
-			count += len(instrument.qualities['talea'].entries[index%entries_len].deduced)
-			y_values.append(ratio*(count%talea_resolved_len)) """
-
-		lines = []
-		x_sum = 0
-		prev_value = 0
-		for x, (y_start, y_end) in zip(x_values, y_values):
-			lines += [prev_value, str(y_start), x + x_sum, str(y_end)]
-			prev_value = x + x_sum + 1
-			x_sum += x
-
-		return lines
-
-	def test_break(self, instrument):
-		ts_strings = [c.processed for c in self.occurrencies]
-
-		signatures = self.parse_time_signatures(ts_strings)
-		segments, time_sigs = self.build_segments(signatures, CYCLE_TARGET_DURATION)
-
-		scale = CYCLE_TARGET_LENGTH / float(CYCLE_TARGET_DURATION)
 		scaled = [float(seg) * scale for seg in segments]
 		block_target_len = round(sum(scaled))
 		x_values = self.distribute_remainder(scaled, block_target_len)
 
 		lines = []
 		x_sum = 0
-		for i, x in enumerate(x_values):
-			lines += [x_sum, i]
+		for index, x in enumerate(x_values):
+			lines += [x_sum, index]
 			x_sum += x
 
+		lines += [x_sum, len(x_values)]  # close the table at the true end
 		return lines
 
-	def ftgen_format(self, instrument):
-		breakpoints = ', '.join(map(str, self.test_break(instrument)))
-		return breakpoints
+	def ftgen_format(self) -> str:
+		scale = CYCLE_TARGET_LENGTH / float(CYCLE_TARGET_DURATION)
+		breakpoints = self.build_breakpoints(scale)
+		return ', '.join(map(str, breakpoints))
+
 
 @dataclass
 class Talea(SharedQuality):
@@ -194,20 +139,24 @@ class Talea(SharedQuality):
 				new_index = (old_index * target_len) // original_len
 				result[new_index] = value
 		return result
+
 	def primary_process(self):
 		for quality in self.occurrencies:
 			quality.processed = self._resample(quality.primary)
 
 	def prepare_GEN17(self):
-		gen17 = []
+		ftgen = []
 		count = 1
 		for i, v in enumerate(self.values):
 			if v:
 				x = i
 				y = count
-				gen17.extend([x, y, x+1, 0])
+				ftgen.extend([x, y, x+1, 0])
 				count += 1
-		return gen17
+		if ftgen[0] != 0:
+			ftgen.insert(0, 0)
+			ftgen.insert(0, 0)
+		return ftgen
 
 	""" def _count(self):
 		count = 1

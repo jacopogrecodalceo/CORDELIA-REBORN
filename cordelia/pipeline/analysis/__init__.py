@@ -1,3 +1,4 @@
+from loguru import logger
 from cordelia.models.nodes import QUALITIEs
 from cordelia.pipeline.analysis.preselection import compare
 
@@ -9,7 +10,7 @@ from cordelia.models.types import QualityStage
 def compile(nodes):
    nodes = compare(nodes)
    
-   # PRIMARY STAGE
+   logger.debug(f'PRIMARY STAGE:')
    for node in nodes:
       if isinstance(node, Instrument):
          resolve_qualities(node)
@@ -19,8 +20,9 @@ def compile(nodes):
 
       elif isinstance(node, Variable):
          pass
-      
-   # REFERENCE STAGE
+      logger.debug(node)
+
+   logger.debug(f'REFERENCE STAGE:')
    for node in nodes:
       if isinstance(node, Instrument):
          deduce_qualities(node, QualityStage.REFERENCE)
@@ -29,7 +31,9 @@ def compile(nodes):
 
       elif isinstance(node, Variable):
          pass
+      logger.debug(node)
 
+   logger.debug(f'EMIT:')
    for node in nodes:
       if isinstance(node, Instrument):
          emit_instr_name(node)
@@ -38,6 +42,7 @@ def compile(nodes):
          resolve_modifiers(node)
       elif isinstance(node, Variable):
          resolve_variable(node)
+      logger.debug(node)
 
 
 

@@ -1,7 +1,9 @@
 ; N.B. Path without the last slash / !!!
 gSjoscil_path init "/Users/j/Documents/PROJECTs/CORDELIA/_INSTR/sonvs/samps-joscil"
 
-$start_instr(joscil)
+	instr joscil
+	$CORDELIA_QUALITIEs
+	$CORDELIA_RELEASE
 
     inote = 69 + 12 * log2(icps / A4)
 
@@ -63,8 +65,10 @@ $start_instr(joscil)
 
 	aout		= ain + acoda
 
-	aout diode_ladder aout*$dyn_var, limit(20$k-((1-$dyn_var)*19.5$k)+icps*idyn, 50, 20$k), random:i(1/9, 1/3)
+	aout diode_ladder aout*idyn, limit(20$k-((1-idyn)*19.5$k)+icps*idyn, 50, 20$k), random:i(1/9, 1/3)
 	aout *= 2.5
-	$dur_var(10)
-$end_instr
+
+	$CORDELIA_ENV
+	$CORDELIA_OUT
+	endin
 

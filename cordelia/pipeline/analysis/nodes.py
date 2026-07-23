@@ -1,9 +1,15 @@
 from types import SimpleNamespace
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader
+
+from loguru import logger
+
 from cordelia.models.csound import CsoundUdo
 from cordelia.models.types import QualityStage, Status
 from cordelia.models.nodes import QUALITIEs
+
+from cordelia.const import JINJA_SONVS_TEMPLATE_ENV
 
 from cordelia.registry import orc_queue, tracker
 from cordelia.registry import registry_quality
@@ -16,7 +22,17 @@ def emit_instr_name(instrument):
 	if uid in tracker.instrument:
 		return True
 	tracker.instrument.add(uid)
-	instr_orc = Path(data['instrument'].get(name)).read_text()
+
+	instr_data = data['instrument'].get(name)
+	match instr_data['type']:
+		case 'orc':
+			path = instr_data['path']
+			instr_orc = Path(path).read_text()
+		case 'wav':
+			template_stem = instr_data['template_stem']
+			instr_template = JINJA_SONVS_TEMPLATE_ENV.get_template(f'{template_stem}.j2')
+			instr_orc = instr_template.render(name=instrument.identity.name, sr=instr_data['sr'], channels=instr_data['channels'], path=instr_data['path'])
+
 	orc_queue.put('instrument', instr_orc)
 
 def emit_modifiers(instrument):
@@ -68,6 +84,7 @@ def deduce_qualities(instrument, stage):
 					continue
 
 				if module['match'](quality.items):
+					logger.debug(f'MATCHED {_name} for {_quality_name} QUALITIY')
 					args = SimpleNamespace(instrument=instrument, quality=quality)
 					module['main'](args)
 

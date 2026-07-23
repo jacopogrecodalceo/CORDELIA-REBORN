@@ -11,12 +11,10 @@ gk{{ instrument.identity.uid }}_{{ quality }}_count init -1
 ktalea_prev init -1
 kinit_flag  init 1
 
-kmain   			chnget "heart"
-
-kphase          table kmain, gi{{ instrument.identity.uid }}_cycle, 1
-
-ktalea_idx      = (kphase % gk{{ instrument.identity.uid }}_talea_num) * 512
-ktalea          table ktalea_idx, gi{{ instrument.identity.uid }}_talea
+kmain					chnget "heart"
+kphase				table3 kmain, gi{{ instrument.identity.uid }}_cycle, 1
+ktalea_idx			= kphase % gk{{ instrument.identity.uid }}_talea_num 
+ktalea				table ktalea_idx * giTALEA_RESAMPLE_LEN, gi{{ instrument.identity.uid }}_talea
 
 if ktalea > 0 && ktalea != ktalea_prev then
 	if kinit_flag == 1 then

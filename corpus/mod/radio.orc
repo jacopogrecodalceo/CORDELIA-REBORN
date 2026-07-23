@@ -36,7 +36,7 @@ khigh_freq		= 11500 + $cordelia_radio_high_freq_jit
 a_, a_, aband svfilter adust, randomh:k(klow_freq, khigh_freq, gkBEATf+gkBEATf*k(aenv_delay)), 5
 
 aconv	cross2 ain, aband, 1024, 2, gihanning, 1
-aconv	*= 12
+aconv	*= 6
 aconv buthp aconv, 20
 aconv limit aconv, -.75, .75
 

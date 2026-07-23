@@ -1,0 +1,47 @@
+
+gi{{ name }}_sr			init {{ sr }}
+gi{{ name }}_channels	init {{ channels }}
+
+{% for ch in range(1, channels + 1) %}
+gi{{ name }}_{{ ch }}		ftgen 0, 0, 0, 1, "{{ path }}", 0, 0, {{ ch }}
+{% endfor %}
+
+gi{{ name }}_list[]		fillarray {% for ch in range(1, channels + 1) %}gi{{ name }}_{{ ch }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+gi{{ name }}_len			init lenarray(gi{{ name }}_list)/gi{{ name }}_channels
+gi{{ name }}_where			init 0
+gk{{ name }}_off			init 0
+gk{{ name }}_dur			init 1
+gk{{ name }}_sonvs			init 1
+
+	instr {{ name }}
+	$CORDELIA_QUALITIEs
+	; NO RELEASE?
+
+idur			divz idur, i(gk{{ name }}_dur), 1
+idiv			i gkdiv
+icps			divz idiv, icps, 1
+
+ioff			i gk{{ name }}_off
+
+isonvs		i gk{{ name }}_sonvs
+isonvs		abs isonvs
+
+isonvs		init isonvs%(gi{{ name }}_len-1)
+imod			init gi{{ name }}_channels-1
+
+index			init (isonvs*gi{{ name }}_channels)+imod
+
+ift_sonvs	init gi{{ name }}_list[index]
+
+aphase		= (chnget:a("heart_a") * icps)
+aphase		+= ioff
+aout			table3 aphase % 1, ift_sonvs, 1
+
+ienv			init .005
+aout			*= cosseg:a(0, ienv, 1, idur-(ienv*2), 1, ienv, 0)
+aout			*= idyn
+
+	$CORDELIA_OUT
+	endin
+

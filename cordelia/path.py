@@ -35,3 +35,4 @@ scala_corpus_json = corpus_json_dir / 'scala.json'
 
 qualities_corpus_dir = corpus / 'qualities' 
 
+sonvs_temp_corpus_dir = corpus / 'sonvs_template'

@@ -1,12 +1,13 @@
 
 	instr ariel_rawer
-	$CORDELIA_QUALITIEs(ariel_rawer_instr)
+Sinstr init "ariel_rawer_instr"
+	$CORDELIA_QUALITIEs
 	schedule nstrnum(Sinstr)+ich/1000, 0, idur, idyn, ienv, icps, ich, Sinstr_out
 	turnoff
 	endin
 
 	instr ariel_rawer_instr
-	$CORDELIA_QUALITIEs(ariel_rawer)
+	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
 
 ; these values are skipped if tied

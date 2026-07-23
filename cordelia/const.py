@@ -45,8 +45,14 @@ UDP_PORTs = {
 	10025: "REAPER",
 }
 
-jinja_env = Environment(
+JINJA_CSOUND_EMIT_ENV = Environment(
 	loader=FileSystemLoader(cordelia.path.templates),
+	trim_blocks=True,
+	lstrip_blocks=True,
+)
+
+JINJA_SONVS_TEMPLATE_ENV = Environment(
+	loader=FileSystemLoader(cordelia.path.sonvs_temp_corpus_dir),
 	trim_blocks=True,
 	lstrip_blocks=True,
 )

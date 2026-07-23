@@ -14,18 +14,25 @@ def main(args):
 		cycle = items[-1]
 		items = items[:-2]
 
-	pulses = int(items[0])
-	steps = int(items[1])
-	
 	shift = 0
-	if len(items) == 3:
-		shift = int(items[2])
+	match len(items):
+		case 1:
+			pulses = int(items[0])
+			steps = int(items[0])
+		case 2:
+			pulses = int(items[0])
+			steps = int(items[1])
+		case 3:
+			pulses = int(items[0])
+			steps = int(items[1])
+			shift = int(items[2])
+
+	if pulses > steps:
+		pulses = steps
 
 	return cycle, bjorklund_shift(pulses, steps, shift=shift)
 
 def _bjorklund(pulses: int, steps: int) -> list[int]:
-	if not 0 <= pulses <= steps:
-		raise ValueError(f"0 <= pulses ({pulses}) <= steps ({steps}) required")
 	if pulses == 0:
 		return [0] * steps
 

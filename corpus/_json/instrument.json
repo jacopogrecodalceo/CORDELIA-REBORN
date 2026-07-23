@@ -1,11 +1,74 @@
 {
-   "loki": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/loki.orc",
-   "joscil": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/joscil.orc",
-   "repuck": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/repuck.orc",
-   "ariel_rawer": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/ariel_rawer.orc",
-   "aaron2": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/aaron2.orc",
-   "anal": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/anal.orc",
-   "tiny": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/tiny.orc",
-   "anal2": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/anal2.orc",
-   "aaron": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/aaron.orc"
+   "bebois": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/bebois.orc"
+   },
+   "loki": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/loki.orc"
+   },
+   "joscil": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/joscil.orc"
+   },
+   "repuck": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/repuck.orc"
+   },
+   "ariel_rawer": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/ariel_rawer.orc"
+   },
+   "aaron2": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/aaron2.orc"
+   },
+   "anal": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/anal.orc"
+   },
+   "tiny": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/tiny.orc"
+   },
+   "anal2": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/anal2.orc"
+   },
+   "aaron": {
+      "type": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/aaron.orc"
+   },
+   "orp_g": {
+      "type": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/orp.wav",
+      "template_stem": "_g",
+      "pitch": "30.444670001117675184332256321795284748077392578125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "orp": {
+      "type": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/orp.wav",
+      "template_stem": "_",
+      "pitch": "30.444670001117675184332256321795284748077392578125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "arm1_g": {
+      "type": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/arm1.wav",
+      "template_stem": "_g",
+      "pitch": "83.0632255506302925596173736266791820526123046875",
+      "channels": 1,
+      "sr": 48000
+   },
+   "arm1": {
+      "type": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/arm1.wav",
+      "template_stem": "_",
+      "pitch": "83.0632255506302925596173736266791820526123046875",
+      "channels": 1,
+      "sr": 48000
+   }
 }

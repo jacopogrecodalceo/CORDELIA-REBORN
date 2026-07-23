@@ -1,0 +1,14 @@
+
+
+
+
+@pulse 120
+
+
+@arm1_g.radio·8·hz 32 4 8 2 4·dur*4·pp
+
+
+@loki.def·eu 5 8 2 in 4·eu 3 8 in 2·edo31hex 1 8 1 9 1 8 12 1 8 1 11 1 2 1·dur*8·pppp
+
+@orp.dio_sea.def·eu 3 8 in 4·hz 8^8 4^2 3^3·dur*2·ff
+

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from cordelia.models.nodes import Instrument
-from cordelia.const import csound_comment_line
+from cordelia.const import csound_comment_line, JINJA_CSOUND_EMIT_ENV
 from cordelia.registry import pool, orc_queue
 from cordelia.const import CLEAR_INSTRUMENT_NUM
 from config import CHANNELs
@@ -20,6 +20,9 @@ OPCODE_RE = re.compile(
 CORDELIA_INIT_RE = re.compile(
 	r';\s*CORDELIA INIT:\s*(.+)'
 )
+
+bridge_template = JINJA_CSOUND_EMIT_ENV.get_template('bridge_init.j2')
+
 
 class CsoundUdo:
 	def __init__(self, name):
@@ -225,8 +228,6 @@ class CsInstr_Bridge(SharedCsInstr):
 
 
 	def _make_instr(self) -> None:
-		from cordelia.const import jinja_env
-		bridge_template = jinja_env.get_template('bridge_init.j2')
 		chain = self._make_modifiers_chain()
 		orcs = [
 			csound_comment_line(f'BRIDGE {self.instrument.identity.uid}'),

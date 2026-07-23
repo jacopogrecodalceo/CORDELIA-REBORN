@@ -3,7 +3,7 @@ from corpus.qualities import *
 stage = QualityStage.REFERENCE
 
 def match(items: list) -> bool:
-	if items[0] in 'rev':
+	if items[0] == 'rev':
 		return True
 	return False
 
