@@ -13,18 +13,21 @@ from cordelia.registry import data
 @dataclass(slots=True)
 class Identity:
 	"""Identity with automatic UID generation."""
+
 	name: str
 	voice_id: int = 1
 	uid: str = field(init=False)
-	
+
 	def __post_init__(self) -> None:
+		self.make()
+
+	def make(self) -> None:
 		"""Validate and generate UID."""
 		if not self.name:
 			raise CordeliaValidationError("identity requires a name")
 		if self.voice_id < 1:
 			raise CordeliaValidationError(f"voice_id must be >= 1, got {self.voice_id}")
 		self.uid = f"{self.name}_{self.voice_id}"
-
 
 @dataclass(slots=True)
 class Modifier:

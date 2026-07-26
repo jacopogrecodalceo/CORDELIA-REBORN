@@ -14,3 +14,4 @@ class Status(Enum):
 	RELEASE = auto()
 	PATCHED = auto()
 	UNPATCHED = auto()
+

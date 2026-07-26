@@ -1,0 +1,98 @@
+; TO FINISH
+
+gi{{ name }}_sr			init {{ data.sr }}
+gi{{ name }}_channels	init {{ data.channels }}
+
+{% for ch in range(1, data.channels + 1) %}
+gi{{ name }}_{{ ch }}		ftgen 0, 0, 0, 1, "{{ data.path }}", 0, 0, {{ ch }}
+{% endfor %}
+
+gi{{ name }}_list[]		fillarray {% for ch in range(1, data.channels + 1) %}gi{{ name }}_{{ ch }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+gi{{ name }}_len			init lenarray(gi{{ name }}_list)/gi{{ name }}_channels
+gi{{ name }}_where			init 0
+gk{{ name }}_off			init 0
+gk{{ name }}_dur			init 1
+gk{{ name }}_sonvs			init 1
+
+gk{{ name }}_cycle_arr[]	tab2array gi{{ instrument.identity.uid }}_color
+
+	instr {{ name }}
+	$CORDELIA_QUALITIEs
+
+kcycle			init 0
+kndx				init 0
+kmax				init icps
+kbar				init 0
+kdur_red 		init 1/32
+kdyn_red 		init.05
+
+icycle_len			lenarray gk{{ name }}_cycle_arr
+
+if metro(gkBEATf+jitter(.005, 1/8, 1/32)) == 1 then
+
+	kdur = 1/gkBEATf*(.125+phasor(1+jitter(.85, 1, 1/8))*1)
+	kstart = gk{{ name }}_cycle_arr[kndx]
+	kdyn = 1-(kcycle/kmax)*kdyn_red
+	kch = 1
+	;krel = 500+oscil3(495, 1+jitter(.85, 1, 1/8))
+	krel = 5+phasor(1+jitter(.85, 1, 1/8))*1495
+	until kch > nchnls do
+		schedulek "read", 0, kdur-divz(kcycle, kmax, 0)*kdur_red, kdyn*idyn_factor, kstart, kch, krel/1000, Spath
+		kch += 1
+	od
+	kcycle += 1
+	if kcycle >= kmax then
+		kcycle	= 0
+		kmax		random giTIMEs[0], giTIMEs[1]
+		if random:k(0, 1)>.975 then
+			kmax *= floor(random(2, 8))
+		endif
+		kdur_red random kdur*.15, kdur*.5
+		kdyn_red random .05, .45
+		kndx 		+= 1
+	endif
+
+	if kndx >= icycle_len then
+		kndx_change 			random 0, icycle_len
+		gk{{ name }}_cycle_arr[kndx_change]	= random:k(0, 1)
+		kndx = 0
+	endif
+
+endif
+
+	endin
+
+
+	instr {{ name }}
+	$CORDELIA_QUALITIEs
+	; NO RELEASE?
+
+idur			divz idur, i(gk{{ name }}_dur), 1
+
+ioff			i gk{{ name }}_off
+
+isonvs		i gk{{ name }}_sonvs
+isonvs		abs isonvs
+
+isonvs		init isonvs%(gi{{ name }}_len-1)
+imod			init gi{{ name }}_channels-1
+
+index			init (isonvs*gi{{ name }}_channels)+imod
+
+ift_sonvs	init gi{{ name }}_list[index]
+itab_dur		init ftlen(ift_sonvs)/gi{{ name }}_sr
+
+irange		i chnget("heart") / 512
+aphase		phasor (1/itab_dur)+irange+jitter(irange, 1/idur, 4/idur)
+aphase		+= (i(gkBEATn)/icps)
+aphase		+= ioff
+aout			table3 aphase % 1 , ift_sonvs, 1
+
+ienv			init .005
+aout			*= cosseg:a(0, ienv, 1, idur-(ienv*2), 1, ienv, 0)
+aout			*= idyn
+
+	$CORDELIA_OUT
+	endin
+

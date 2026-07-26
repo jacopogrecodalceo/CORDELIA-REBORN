@@ -7,6 +7,7 @@ from loguru import logger
 
 from cordelia.csound.run import build_orchestra, init
 
+from cordelia.const import OUTPUT_SCORE_PATH
 from cordelia.pipeline import compile
 from cordelia.udp import UDPRouter, UDPWorker
 from cordelia.console import console
@@ -16,6 +17,7 @@ from cordelia.const import (
 	QUERY_UDP_WHILE_SLEEP_TIME,
 	UDP_PORTs,
 )
+from cordelia.helpers import fix_wav_header
 from config.options import flags
 from cordelia.registry import orc_queue
 
@@ -78,6 +80,9 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 	logger.info("csound stopped — triggering shutdown")
 	stop_event.set()
 
+def _record(pt: ctcsound.CsoundPerformanceThread) -> None:
+	pt.record(str(OUTPUT_SCORE_PATH), 24, 4) 
+
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
@@ -89,9 +94,10 @@ def main() -> None:
 	worker.start()
 
 	threads = [
-		threading.Thread(target=_csound_monitor_fn, args=(pt,),      daemon=True, name="csound_monitor"),
-		threading.Thread(target=_udp_thread_fn,      args=(worker,),  daemon=True, name="udp"),
-		threading.Thread(target=_scheduler_thread_fn, args=(cs, pt),  daemon=True, name="scheduler"),
+		threading.Thread(target=_csound_monitor_fn, args=(pt,),			daemon=True, name="csound_monitor"),
+		threading.Thread(target=_record, args=(pt,),							daemon=True, name="record_csound"),
+		threading.Thread(target=_udp_thread_fn,      args=(worker,),	daemon=True, name="udp"),
+		threading.Thread(target=_scheduler_thread_fn, args=(cs, pt),	daemon=True, name="scheduler"),
 	]
 	for t in threads:
 		t.start()
@@ -110,7 +116,9 @@ def main() -> None:
 	worker.stop()
 	pt.stop()
 	pt.join()
+	pt.stopRecord()
 	cs.stop()
+	fix_wav_header(OUTPUT_SCORE_PATH)
 	logger.info("bye")
 
 

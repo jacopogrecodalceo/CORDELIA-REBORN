@@ -12,12 +12,12 @@ def main(args):
 	items = args.quality.items[1:]
 
 	prev_talea = args.instrument.talea.prev
-	args.instrument.talea.prev.processed = expand_groove(prev_talea.processed, grooves=[float(Fraction(i)) for i in items], original_pattern_len=len(prev_talea.primary))
+	args.instrument.talea.prev.processed = expand_groove(prev_talea.processed, grooves=[float(Fraction(i)) for i in items], length=len(prev_talea.primary))
 	args.instrument.talea.dirty = True
 
-def expand_groove(pattern, grooves, original_pattern_len, curve=.5):
+def expand_groove(pattern, grooves, length, curve=.5):
 	pattern_len = len(pattern)
-	groove_width = pattern_len / original_pattern_len
+	groove_width = pattern_len / length
 	grooves_len = len(grooves)
 
 	result = [0] * pattern_len

@@ -2,21 +2,24 @@ import json
 import librosa
 import numpy as np
 from decimal import Decimal
+
 import cordelia.path
 from cordelia.console import console
 
 INPUT_DIR = cordelia.path.instr_corpus_dir
 OUTPUT_JSON = cordelia.path.instr_corpus_json
 
+EXCLUDEs = ['__header']
+
 instrs = {}
 
 def add_orcs():
-	for path in INPUT_DIR.rglob("*.orc"):
+	for path in INPUT_DIR.rglob(f"*.orc"):
 		name = path.stem
 		if name in instrs:
 			raise ValueError(f'DUPLICATE NAME: {name}')
 		instrs[name] = {
-			'type': 'orc',
+			'kind': 'orc',
 			'path': str(path)
 		}
 
@@ -33,19 +36,20 @@ def create_templates(sonvs_name):
 	res = []
 	for template_path in cordelia.path.sonvs_temp_corpus_dir.glob('*.j2'):
 		variant = template_path.stem
-		name = sonvs_name if variant == '_' else sonvs_name + variant
-		res.append((name, variant))
+		if variant not in EXCLUDEs:
+			name = sonvs_name if variant == '_' else sonvs_name + variant
+			res.append((name, variant))
 	return res
 
 def add_wavs():
-	for path in INPUT_DIR.rglob("*.wav"):
+	for path in INPUT_DIR.rglob(f"*.wav"):
 		wav_name = path.stem
 		channels, sr, main_f0 = anal_wav(path)
 		for sonvs_name, template_stem in create_templates(wav_name):
 			if sonvs_name in instrs:
 				raise ValueError(f'DUPLICATE NAME: {sonvs_name} in {instrs}')
 			instrs[sonvs_name] = {
-				'type': 'wav',
+				'kind': 'wav',
 				'path': str(path),
 				'template_stem': str(template_stem),
 				'pitch': str(main_f0),

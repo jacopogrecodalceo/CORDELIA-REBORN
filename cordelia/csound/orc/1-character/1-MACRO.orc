@@ -134,6 +134,7 @@ ain = ains[ifile_ch-1]*$dyn_var*ifactor_dyn
 #define pp		#(ampdb(-23)*i(gkdyn))#
 #define ppp		#(ampdb(-27)*i(gkdyn))#
 #define pppp	#(ampdb(-31)*i(gkdyn))#
+#define nan		#(ampdb(-48)*i(gkdyn))#
 
 ; deprecated
 #define ms		#/1000#

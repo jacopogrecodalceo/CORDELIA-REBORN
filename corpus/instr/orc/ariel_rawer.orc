@@ -9,6 +9,9 @@ Sinstr init "ariel_rawer_instr"
 	instr ariel_rawer_instr
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
 ; these values are skipped if tied
 tigoto SKIP_I
@@ -120,7 +123,9 @@ SKIP_K:
 	aout		*= (1 + kjit_dyn)
 	aout		= aout*aenv*adyn_line / 2
 
-	$CORDELIA_END_INSTR
+	$CORDELIA_OUT
+	endin
+
 
 
 

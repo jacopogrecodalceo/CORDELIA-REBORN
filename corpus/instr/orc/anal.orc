@@ -1,6 +1,9 @@
-	$CORDELIA_BEGIN_INSTR(anal)
+	instr anal
+	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
-
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 imode		init 16
 inyx		init .25
 
@@ -21,7 +24,8 @@ kcps		tab (abs(kndx)*itun_len)+ioff, i(gktuning)
 kcps		= portk(icps * kcps, .025)+kvibf
 aout		vco2 idyn*abs(kvibd), kcps, imode, kpw, kphs, inyx
 
-	$CORDELIA_END_INSTR
+	$CORDELIA_OUT
+	endin
 
 
 

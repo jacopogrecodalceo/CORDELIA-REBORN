@@ -9,6 +9,9 @@ giaaron2_atk		init .0125
 	instr aaron2_instr_1
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
 indx		init i(gkaaron2_indx)
 idetune 	init i(gkaaron2_detune)
@@ -24,19 +27,17 @@ kcps	= icps + vibr(expseg(.05, idur, icps/(icps*12)), random:i(idur*3, idur*5), 
 adyn		= abs(lfo:a($dyn_var, cosseg(random:i(idur*.35, idur*.95)/ivibdiv, idur, random:i(idur*.75, idur*3.5)/ivibdiv)))
 aout	foscili adyn, kcps+random:i(-.05, .05), kcar, kmod+random:i(-.0015, .0015), kndx+random:i(-.05, .05), gisine
 
-	$CORDELIA_END_INSTR
-
+	$CORDELIA_OUT
+	endin
 
 	instr aaron2_instr_2
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	aenv cossegr 0, giaaron2_atk, 1, irel, 0
 
 ipanfreq	init random:i(-.95, .95)
 
 aout	repluck random:i(.015, .35), idyn, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3:a(1, random:i(.05, .25),  gitri)
-
-aout	*= cosseg:a(0, giaaron2_atk, 1, irel, 0)
-aout	dcblock2 aout
 
 	$CORDELIA_OUT
 	endin
@@ -45,18 +46,18 @@ aout	dcblock2 aout
 
 	instr aaron2_instr_3
 	$CORDELIA_QUALITIEs
+	aenv cosseg 0, giaaron2_atk, 1, idur/5, 0
 
 ipanfreq	= random:i(-.95, .95)
 
 aout	repluck random:i(.015, .35), $dyn_var, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3:a(1, random:i(.05, .25), gisine)
-
-aout	*= cosseg:a(0, giaaron2_atk, 1, idur/5, 0)
 
 	$CORDELIA_OUT
 	endin
 
 	instr aaron2_instr_4
 	$CORDELIA_QUALITIEs
+	aenv cosseg 0, giaaron2_atk, idyn, idur, 0
 
 adyn		= abs(lfo:a(idyn, cosseg(random:i(idur*.5, idur*.75)/2, idur, random:i(idur*.75, idur*3.5)/2)))
 
@@ -69,9 +70,6 @@ arout	resonx	af, kcps, icps/5
 aout	balance arout, af
 
 aout	*= adyn
-
-aout	*= cosseg:a(0, giaaron2_atk, idyn, idur, 0)
-aout	dcblock2 aout
 
 	$CORDELIA_OUT
 	endin

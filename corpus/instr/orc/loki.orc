@@ -5,17 +5,18 @@
 	instr loki
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 1, idur, .95, irel, 0
+	)
+
 ; IF RANGE DYN
 if idyn < ampdbfs(-13) then
 	Sdyn init "0-30"
 elseif  idyn < ampdbfs(-11) then
-	idyn init ampdbfs(-11)
 	Sdyn init "31-60"
 elseif  idyn < ampdbfs(-9) then
-	idyn init ampdbfs(-9)
 	Sdyn init "61-90"
 elseif	idyn < ampdbfs(-5) then
-	idyn init ampdbfs(-5)
 	Sdyn init "91-110"
 else
 	Sdyn init "111-127"
@@ -152,8 +153,10 @@ S_RR_central			sprintf "RR%i", floor(random(1, imax_RR))
 Spath_central			sprintf "%s/FP_%s_%s_%s_%s.wav", $loki_path, "C", Snote_name, Sdyn, S_RR_central
 aout_central			diskin Spath_central, iratio;, iskiptime/1000
 
+idyn_factor				init .65
 aout						sum aout_lateral/2, aout_central/2
-aout						*= .5+idyn/2
+aout						*= (1-idyn_factor)+idyn*idyn_factor
+
 ; FP_RKey_C4_31-60_RR1
 ; RELEASE
 ;================================================================
@@ -170,7 +173,9 @@ else
 	Spath_release sprintf "%s/release_hard_RR%i.wav", $loki_path, index_RR_release
 endif
 schedule "loki_release", idur, idur, Spath_release, idyn/8, ich, Sinstr_out
-	$CORDELIA_END_INSTR
+	$CORDELIA_OUT
+	endin
+
 
 	instr loki_release
 idur 			init p3
@@ -179,16 +184,19 @@ idyn			init p5
 ich			init p6
 Sinstr_out 	init p7
 
+aenv		cosseg 0, $loki_release_atk, 1, idur-$loki_release_atk*2, 1, $loki_release_atk, 0
+
 ilen 			filelen Spath
 if p3 > ilen then
 	p3 init ilen
 endif
 
-aenv		cosseg 0, $loki_release_atk, 1, idur-$loki_release_atk*2, 1, $loki_release_atk, 0
 
 ains[]	diskin Spath, 1+random:i(-.005, .005)
 	$CORDELIA_SAMP_OUT
-aout 		= ain*idyn*aenv
+
+aout 		= ain*idyn
+
 	$CORDELIA_OUT
 	endin
 

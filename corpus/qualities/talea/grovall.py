@@ -13,13 +13,13 @@ def main(args):
 
 	all_values = args.instrument.talea.values
 	args.instrument.talea.values = expand_groove(
-		all_values, grooves=[float(Fraction(i)) for i in items], original_pattern_len=len([t.primary for t in args.instrument.talea])
+		all_values, grooves=[float(Fraction(i)) for i in items], length=len([t.primary for t in args.instrument.talea])
 	)
 	args.instrument.talea.dirty = True
 
-def expand_groove(pattern, grooves, original_pattern_len, curve=.5):
+def expand_groove(pattern, grooves, length, curve=.5):
 	pattern_len = len(pattern)
-	groove_width = pattern_len / original_pattern_len
+	groove_width = pattern_len / length
 	grooves_len = len(grooves)
 
 	result = [0] * pattern_len

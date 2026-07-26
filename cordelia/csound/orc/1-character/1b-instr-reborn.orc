@@ -20,10 +20,16 @@ irel 		init idur*irel_jit
 			xtratim irel
 #
 
-#define CORDELIA_ENV #
-aout *= cordelia_envgen(ienv, idur, irel)
+#define CORDELIA_ENV(custom_env) #
+if ienv == 0 then
+	$custom_env
+else
+	aenv	cordelia_envgen ienv, idur, irel
+endif
 #
+
 #define CORDELIA_OUT #
+aout	*= aenv
 chnmix aout, sprintf("%s_%i", Sinstr_out, ich)
 #
 
@@ -34,12 +40,6 @@ chnmix aout, sprintf("%s_%i", Sinstr_out, ich)
 #define CORDELIA_BEGIN_INSTR(instr_name) #
 	instr $instr_name
 $CORDELIA_QUALITIEs($instr_name)
-#
-
-#define CORDELIA_END_INSTR #
-$CORDELIA_ENV
-$CORDELIA_OUT
-	endin
 #
 
 #define CORDELIA_CPS_HI_LIMIT #

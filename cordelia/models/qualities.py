@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import itertools
 import abjad
 
-from cordelia.const import TALEA_RESAMPLE_LEN, CYCLE_TARGET_DURATION, CYCLE_TARGET_LENGTH
+from cordelia.const import FTGEN_SIZE, TALEA_RESAMPLE_LEN, CYCLE_TARGET_DURATION, FTGEN_SIZE
 
 @dataclass(slots=True)
 class Quality:
@@ -122,7 +122,7 @@ class Cycle(SharedQuality):
 		return lines
 
 	def ftgen_format(self) -> str:
-		scale = CYCLE_TARGET_LENGTH / float(CYCLE_TARGET_DURATION)
+		scale = FTGEN_SIZE / float(CYCLE_TARGET_DURATION)
 		breakpoints = self.build_breakpoints(scale)
 		return ', '.join(map(str, breakpoints))
 
@@ -188,11 +188,18 @@ class Dur(SharedQuality):
 class Dyn(SharedQuality):
 	default_value: list = field(default_factory=lambda: ['mf'])
 	def ftgen_format(self):
-		return ', '.join([rf'${v}' for v in self.values])
+		vs = []
+		for v in self.values:
+			if isinstance(v, str) and all(x.isalpha() for x in v):
+				vs.append(f'${v}')
+			else:
+				vs.append(v)
+				
+		return ', '.join(map(str, vs))
 
 @dataclass
 class Env(SharedQuality):
-	default_value: list = field(default_factory=lambda: ['cls'])
+	default_value: list = field(default_factory=lambda: ['env'])
 	def ftgen_format(self):
 		return ', '.join([rf'gi{v}' for v in self.values])
 

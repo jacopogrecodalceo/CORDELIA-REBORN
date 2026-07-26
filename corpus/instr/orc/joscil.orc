@@ -4,6 +4,9 @@ gSjoscil_path init "/Users/j/Documents/PROJECTs/CORDELIA/_INSTR/sonvs/samps-josc
 	instr joscil
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
     inote = 69 + 12 * log2(icps / A4)
 
@@ -68,7 +71,7 @@ gSjoscil_path init "/Users/j/Documents/PROJECTs/CORDELIA/_INSTR/sonvs/samps-josc
 	aout diode_ladder aout*idyn, limit(20$k-((1-idyn)*19.5$k)+icps*idyn, 50, 20$k), random:i(1/9, 1/3)
 	aout *= 2.5
 
-	$CORDELIA_ENV
 	$CORDELIA_OUT
 	endin
+
 

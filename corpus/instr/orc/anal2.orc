@@ -1,5 +1,9 @@
-	$start_instr(anal)
-
+	instr anal2
+	$CORDELIA_QUALITIEs
+	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
 imode	init 16
 kpw	abs jitter(1, gkbeatf/4, gkbeatf)
@@ -19,9 +23,9 @@ itun_len	init ilen - ioff
 ktun_dec		tab (abs(kndx)*itun_len)+ioff, i(gktuning)
 
 kcps	= portk(icps * ktun_dec, .025)+kvibf
-aout	vco2 $dyn_var*abs(kvibd), kcps, imode, kpw, kphs, inyx
+aout	vco2 idyn*abs(kvibd), kcps, imode, kpw, kphs, inyx
 
-	$dur_var(10)
-	$end_instr
+	$CORDELIA_OUT
+	endin
 
 

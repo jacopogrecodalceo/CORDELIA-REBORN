@@ -9,7 +9,7 @@ NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
 NUMBER: /-?\d+\/\d+|-?\d*\.\d+|-?\d+/
 
 // SPECIAL CHAR
-NOTE: /[a-g](is|es)?(?:\.+|'+)?/
+NOTE: /[a-g](is|es)?(s|f)?(?:\.+|'+)?/
 ALEA: /\d+\?/
 DEGREE: /\d+(M|m|d|a)/
 REPEAT: /\^\d+/

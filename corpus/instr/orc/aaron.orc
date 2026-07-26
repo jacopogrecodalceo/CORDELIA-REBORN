@@ -6,8 +6,11 @@ gkaaron_detune	init 0 ;detune parameter for aaron instr
 giaaron_atk		init .0125
 
 	instr aaron_instr_1
-	$CORDELIA_QUALITIEs(aaron)
+	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
 indx		init i(gkaaron_indx)
 idetune 	init i(gkaaron_detune)
@@ -22,11 +25,11 @@ kcps		= icps + vibr(expseg(.05, idur, icps/(icps*12)), randomi:k(idur*3, idur*5,
 adyn		= abs(lfo:a(idyn, cosseg(random:i(idur*.35, idur*.95)/ivib_div, idur, random:i(idur*.75, idur*3.5)/ivib_div)))
 aout		foscili adyn, kcps+randomi:k(-.05, .05, 1/idur, 2, 0), kcar, gkaaron_mod+randomi:k(-.0015, .0015, 1/idur, 2, 0), kndx+randomi:k(-.05, .05, 1/idur), gisine
 
-	$CORDELIA_END_INSTR
-
+	$CORDELIA_OUT
+	endin
 
 	instr aaron_instr_2
-	$CORDELIA_QUALITIEs(aaron)
+	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
 
 ipanfreq	init random:i(-.95, .95)
@@ -34,7 +37,6 @@ ipanfreq	init random:i(-.95, .95)
 aout		repluck random:i(.015, .35), idyn, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3:a(1, random:i(.05, .25),  gitri)
 
 aenv	cossegr 0, giaaron_atk, 1, irel, 0
-aout	*= aenv
 
 	$CORDELIA_OUT
 	endin
@@ -42,14 +44,13 @@ aout	*= aenv
 	
 
 	instr aaron_instr_3
-	$CORDELIA_QUALITIEs(aaron)
+	$CORDELIA_QUALITIEs
 
 ipanfreq	= random:i(-.95, .95)
 
 aout	repluck random:i(.015, .35), $dyn_var, icps + random:i(-ipanfreq, ipanfreq), randomh:k(.25, .95, random:i(.05, .15)), random:i(.05, .65), oscil3:a(1, random:i(.05, .25), gisine)
 
 aenv	cosseg 0, giaaron_atk, 1, idur/5, 0
-aout	*= aenv
 
 	$CORDELIA_OUT
 	endin
@@ -58,7 +59,7 @@ aout	*= aenv
 	
 
 	instr aaron_instr_4
-	$CORDELIA_QUALITIEs(aaron)
+	$CORDELIA_QUALITIEs
 
 kcps		= icps + vibr(expseg(.05, idur, icps/(icps*12)), randomi:k(idur*3, idur*5, icps/(icps*12)), gisine)
 anoi		fractalnoise random:i(.05, .75), random:i(.05, .75)
@@ -67,7 +68,7 @@ aout		balance2 ares, anoi
 
 aenv		cosseg 0, giaaron_atk, idyn, idur, 0
 adyn		= abs(lfo:a(idyn, cosseg(random:i(idur*.5, idur*.75)/2, idur, random:i(idur*.75, idur*3.5)/2)))
-aout		*= adyn * aenv
+aout		*= adyn
 
 	$CORDELIA_OUT
 	endin

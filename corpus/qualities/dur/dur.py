@@ -9,14 +9,23 @@ def match(items: list):
 
 def main(args):
 	items = args.quality.items[1:]
-	if isinstance(items[1], list):
-		for occurrence in args.instrument.dur:
-			math_op = items[0]
-			values = items[1]
-			#entry.deduced = [eval(f'{f}{math_op}{values[i%len(values)]}') for i, f in enumerate(entry.deduced)]
-			occurrence.processed = [eval(f'{f}{math_op}{values[i%len(values)]}') for i, f in enumerate(occurrence.processed)]
-	else:
-		for occurrence in args.instrument.dur:
-			occurrence.processed = [eval(f'{f}{"".join(items)}') for f in occurrence.processed]
-	args.instrument.dur.dirty = True
+	quality = getattr(args.instrument, 'dur')
+	math_op = items[0]
 
+	values = items[1] if isinstance(items[1], list) else items[1:]
+
+	prev_values = [v for occurrence in quality for v in occurrence.processed]
+	target = max(len(prev_values), len(values))
+
+	i = 0
+	while i < target:
+		for occurrence in quality:
+			prev = prev_values[i % len(prev_values)]
+			value = values[i % len(values)]
+			result = f'{prev}{math_op}{value}'
+			if i < len(occurrence.processed):
+				occurrence.processed[i] = result
+			else:
+				occurrence.processed.append(result)
+			i += 1
+	quality.dirty = True

@@ -4,6 +4,7 @@ _a method, a tender organic affection_
 _a new horizon_
 
 ### FEATURING A BRAND NEW WRITING STYLE
+
 In ISOCORDELIA no commas, no uppercase exist.
 We prefer {} to (), but you can use both.
 · or newline is everything (but u can also use |)
@@ -16,7 +17,7 @@ But w8 — wtf is ISOCORDELIA? Like isorhythm, it could be a live coding style.
 - **change**, always change even if you are certain. *Progression*, *mouvement* is better than *static thinking*
 - play _cordelia_ as the last thing you will ever do in your life
 - Have *fun*, be *generous*
-- **live coding ≠ cuelist**
+- **live coding ≠ cuelist** (tu sais quand tu as un rêve. je voudrais que cordelia invite à écrire plus que à copie/coller)
 - **recompose**, do not repeat
 - *repeat* — yep, but only if it is important
 - make it **organic** (and ecologic): *code your own choices inside algorithm* (*)

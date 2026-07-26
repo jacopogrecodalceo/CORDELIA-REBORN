@@ -1,0 +1,30 @@
+
+	instr {{ name }}
+	$CORDELIA_QUALITIEs
+	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		ienv init .005
+		aenv cossegr 0, ienv, 1, idur-(ienv*2), 1, ienv, 0
+	)
+
+
+; isonvs_input_ft is the gen chosen if it's a samples directory case
+isonvs_input_ft		i gk{{ name }}_sonvs
+isonvs_input_ft		abs isonvs_input_ft
+
+isonvs_input_ft		init isonvs_input_ft%(gi{{ name }}_len-1)
+isonvs_input_ft_indx	init (isonvs_input_ft*gi{{ name }}_channels)+(gi{{ name }}_channels-1)
+isonvs_ft				init gi{{ name }}_list[isonvs_input_ft_indx]
+isonvs_ft_dur			init ftlen(isonvs_ft)/sr
+isonvs_phase			init (icps%A4)/A4
+
+aread						phasor 1/isonvs_ft_dur, isonvs_phase
+aout						table3 aread, isonvs_ft, 1
+
+ienv			init .005
+aout			*= idyn
+
+	$CORDELIA_OUT
+	endin
+
+

@@ -19,7 +19,9 @@ def main(args):
 	if 'in' in items:
 		cycle = items[-1]
 		items = items[:-2]
+		talea = [1]*int(items[0])
 	else:
 		cycle = items[0]
+		talea = [1]*8
 
-	return str(cycle), [1]*int(items[0])
+	return str(cycle), talea

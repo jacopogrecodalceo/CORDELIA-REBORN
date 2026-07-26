@@ -1,0 +1,83 @@
+
+gk{{ name }}_jit			init 0
+gk{{ name }}_ran			init 1
+
+	instr {{ name }}_jitter
+
+gk{{ name }}_jit		samphold jitter:k(.005, gkBEATf/16, gkBEATf/32), changed2:k(int(chnget:k("heart") * 64))
+gk{{ name }}_ran		samphold pow(int(random:k(1, 4)), int(random:k(1, 2))), changed2:k(int(chnget:k("heart") * 64))
+if active:k("{{ name }}") == 0 then
+	if timeinstk() > 1 then
+		turnoff
+	endif
+endif
+
+	endin
+
+	instr {{ name }}
+	$CORDELIA_QUALITIEs
+	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		ienv init .005
+		aenv cosseg 0, ienv, 1, idur-(ienv*2), 1, ienv, 0
+	)
+
+idur		divz idur, i(gk{{ name }}_dur), 1
+icps		init icps % i(gkdiv)
+
+if active:i("{{ name }}_jitter") == 0 then
+	schedule "{{ name }}_jitter", 0, -1
+endif
+
+isonvs		i gk{{ name }}_sonvs
+isonvs		abs isonvs
+
+if isonvs == 0 then
+	isonvs random 0, gi{{ name }}_len
+	prints "I'll play a random sonvs\n"
+endif
+
+isonvs		init isonvs%(gi{{ name }}_len-1)
+index		init (isonvs*gi{{ name }}_channels)+gi{{ name }}_channels-1
+
+itab_sonvs	init gi{{ name }}_list[index]
+itab_dur	init ftlen(itab_sonvs)/sr
+
+if icps < 1 then
+
+	if icps == 0 then
+		icps = .8
+	endif
+	
+	irange		i chnget("heart") / 512
+	aphasor		phasor (1/itab_dur)+irange+jitter(1/512, 1/idur, 4/idur)
+	aphasor		+= (i(gkBEATn)/icps)
+
+else
+
+	idiv		init icps%i(gkdiv)
+	ioff		i gk{{ name }}_off
+
+	acycle		= (chnget:a("heart_a") * divz(gkdiv, idiv, 1))+ioff
+	aphasor		= acycle % 1
+
+endif
+
+aout_n		table3 aphasor, itab_sonvs, 1
+
+;avar 		a portk(gk{{ name }}_jit, random:i(.0015, .015)*cosseg(1, p3, 0))
+aphasor_bb	= limit(gk{{ name }}_jit+aphasor, 0, 1)%(1/gk{{ name }}_ran)
+aout_bb		table3 aphasor_bb, itab_sonvs, 1
+
+aout_bb		*= table3:a((aphasor*gk{{ name }}_ran)%1, gisotrap, 1)
+
+aout_n	*= idyn
+aout_bb	*= idyn
+
+aout = aout_n*(1-aphasor_bb) + aout_bb
+
+	$CORDELIA_OUT
+	endin
+
+
+

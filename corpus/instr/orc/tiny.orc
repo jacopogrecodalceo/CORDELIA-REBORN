@@ -7,6 +7,9 @@ coming from another synth icreated working on cordelia reborn
 	instr tiny
 	$CORDELIA_QUALITIEs
 	$CORDELIA_RELEASE
+	$CORDELIA_ENV(
+		aenv cossegr 0, .005, 1, idur/2, .5, idur/2, .35, irel, 0
+	)
 
 inoi_type 	random 0, 2
 anoi 			fractalnoise 1/12, inoi_type
@@ -20,5 +23,5 @@ aout 			*= idyn
 avib			= .5 + oscil3:a(cossegr:a(0, idur, 1, idur, random(.25, .5), irel, 0)/4, 3+random(-.005, .005))
 aout 			= aout * avib
 
-	$CORDELIA_END_INSTR
-
+	$CORDELIA_OUT
+	endin

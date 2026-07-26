@@ -6,10 +6,11 @@ from cordelia.models.nodes import *
 def _dedupe(nodes: list) -> dict[str, Node]:
 	seen: dict[str, Node] = {}
 	for node in nodes:
-		uid = node.identity.uid
-		if uid in seen:
-			raise CordeliaValidationError(f"duplicate uid in this message: '{uid}'")
-		seen[uid] = node
+		if node.identity.uid in seen:
+			#raise CordeliaValidationError(f"duplicate uid in this message: '{uid}'")
+			node.identity.voice_id += 1
+			node.identity.make()
+		seen[node.identity.uid] = node
 	return seen
 
 previous = {}
@@ -37,7 +38,10 @@ def compare(current_nodes: list) -> None:
 	for uid in common_keys:
 		node = current[uid]
 		prior = previous[uid]
-		node.status = Status.PATCHED if node != prior else Status.UNPATCHED
+		if node != prior:
+			node.status = Status.PATCHED
+		else:
+			node.status = Status.UNPATCHED
 		node.prev_state = prior
 		previous[uid] = node
 		results.append(node)
