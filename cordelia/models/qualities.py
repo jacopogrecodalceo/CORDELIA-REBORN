@@ -26,6 +26,15 @@ class SharedQuality:
 		)
 		self.occurrencies.append(quality)
 
+	def remove_default_values(self):
+		for occurrency in self.occurrencies:
+			if not occurrency.verse and not occurrency.func:
+				self.occurrencies = []
+
+	def copy(self, quality: Quality):
+		self.remove_default_values()
+		self.occurrencies.append(quality)
+
 	def primary_process(self):
 		if not self.occurrencies:
 			self.occurrencies.append(Quality(primary=self.default_value))
@@ -55,6 +64,7 @@ class SharedQuality:
 
 @dataclass
 class Cycle(SharedQuality):
+	default_value: list = field(default_factory=lambda: ['8'])
 
 	def parse_signatures(self, ts_strings: list[str]) -> list[abjad.TimeSignature]:
 		"""Turn shorthand strings ('8', '7/8') into TimeSignature objects, defaulting to /4."""
@@ -129,6 +139,7 @@ class Cycle(SharedQuality):
 
 @dataclass
 class Talea(SharedQuality):
+	default_value: list = field(default_factory=lambda: ['8'])
 
 	def _resample(self, talea, target_len=TALEA_RESAMPLE_LEN):
 		"""zero pad resampling"""

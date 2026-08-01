@@ -14,6 +14,7 @@ MAKE_SCRIPTS = {
 	"instr": "cordelia.scripts.lib.make_instr_json",
 	"mod": "cordelia.scripts.lib.make_mod_json",
 	"scala": "cordelia.scripts.lib.make_scala_json",
+	"keys": "cordelia.scripts.lib.make_keywords",
 }
 
 

@@ -4,7 +4,7 @@ from fractions import Fraction
 from corpus.qualities import *
 
 def match(items: list) -> bool:
-	if items[0] in 'poem_short':
+	if items[0] == 'poem_short':
 		return True
 	return False
 

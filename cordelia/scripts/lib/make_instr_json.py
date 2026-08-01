@@ -18,12 +18,12 @@ def add_orcs():
 		name = path.stem
 		if name in instrs:
 			raise ValueError(f'DUPLICATE NAME: {name}')
+		if name.startswith('_'):
+			continue
 		instrs[name] = {
 			'kind': 'orc',
 			'path': str(path)
 		}
-
-
 
 def anal_wav(path):
 	audio, sr = librosa.load(path, sr=None)

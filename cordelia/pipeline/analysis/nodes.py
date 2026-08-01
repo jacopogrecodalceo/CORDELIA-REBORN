@@ -62,7 +62,7 @@ def resolve_modifiers(instrument):
 def resolve_variable(variable):
 	variable.value = resolve_func(variable, variable.value)
 
-def deduce_qualities(instrument, stage):
+def deduce_qualities(instrument, stage, nodes=None):
 	if stage == QualityStage.REFERENCE and instrument.status == Status.UNPATCHED:
 		print(f'SKIPPED for {stage} {instrument}')
 		return
@@ -73,7 +73,7 @@ def deduce_qualities(instrument, stage):
 					continue
 				if module['match'](quality.items):
 					logger.debug(f'MATCHED {_name} for {_quality_name} QUALITIY')
-					args = SimpleNamespace(instrument=instrument, quality=quality)
+					args = SimpleNamespace(instrument=instrument, quality=quality, nodes=nodes)
 					module['main'](args)
 
 DATA_TO_LOAD = {k: v for k, v in data.items() if k in ['env', 'mode', 'scala']}

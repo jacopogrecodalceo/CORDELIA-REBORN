@@ -25,7 +25,7 @@ def compile(nodes):
    logger.debug(f'REFERENCE STAGE:')
    for node in nodes:
       if isinstance(node, Instrument):
-         deduce_qualities(node, QualityStage.REFERENCE)
+         deduce_qualities(node, QualityStage.REFERENCE, nodes=nodes)
          for quality in QUALITIEs:
             getattr(node, quality).post_process()
 

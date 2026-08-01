@@ -16,7 +16,7 @@ def main(args):
 		length = items[-1]
 		items = items[:-2]
 	else:
-		length = 4
+		length = 8
 
 	items = flatten_items(items)
 	return parse_curve(items, length)
