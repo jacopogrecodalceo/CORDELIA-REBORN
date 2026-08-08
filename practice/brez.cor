@@ -1,0 +1,22 @@
+
+
+
+
+
+
+@pulse 120
+
+@dyn 1
+
+@joscils_div 2
+
+
+@joscils·8·5·6·edo31hex b2 1 2 7m 5 3m·fff p^2 f p^2·dur*4·freq*1 1^8 2
+
+
+
+@joscils#2·8·5·6·edo31hex fs3 1 2 7m 5 3m·fff p^2 f p^2·dur*4·freq*1 1^8 2 3 4
+
+
+
+

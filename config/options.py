@@ -1,5 +1,10 @@
+from cordelia.const import FTGEN_SIZE, TALEA_RESAMPLE_LEN
+from cordelia.path import csound
 
 CHANNELs = 2
+CSOUND_nchnls = 4
+OFF_CHANNEL = 2
+
 SR = 48000
 KSMPS = 64
 CONTROL_CHANNELs = []
@@ -11,7 +16,7 @@ else:
 
 flags = [
    #f'-o{cordelia.const.OUTPUT_SCORE_PATH}',
-   f'--nchnls={CHANNELs}',
+   f'--nchnls={CSOUND_nchnls}',
    f'--sample-rate={SR}',
    f'--ksmps={KSMPS}',
    '--format=24bit',
@@ -19,7 +24,7 @@ flags = [
    '--0dbfs=1',
 
    '-d', # hide ftgen ascii tables
- 
+
    '--m-amps=1',
    '--m-range=1',
    '--m-warnings=0',
@@ -29,8 +34,25 @@ flags = [
    
    '-m2', # hide rtevent
    
+   f'--env:INCDIR={str(csound / 'orc')}',
+   
    "-+id_artist=jacopo greco d'alceo",
 ]
 
+init_settings = [
+   "; BEGIN CORDELIA SETTINGS",
 
+   f"ginchnls init {CHANNELs}",
+   f"giOFF_CH init {OFF_CHANNEL}",
+   
+   "gimainclock_ch init 0",
+   "giquarterclock_ch init 0",
+   "giINSTR_CLEAR_COUNT init 0",
+
+   f"giTALEA_RESAMPLE_LEN init {TALEA_RESAMPLE_LEN}",
+   f"giFTGEN_SIZE init {FTGEN_SIZE}",
+
+   "; END CORDELIA SETTINGS",
+
+]
 

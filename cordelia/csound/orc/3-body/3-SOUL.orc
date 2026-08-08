@@ -43,8 +43,8 @@ asat 		tone asat, 9500
 aout		= (1 - gksoul_tape_wet) * aout + gksoul_tape_wet * asat
 
 aout		butterhp aout, 20
-
-	outch gioffch+ich+1, aout
+aout		limit aout, -.95, .95
+	outch giOFF_CH+ich+1, aout
 
 ;garecorder[ich] = aout
 
@@ -69,8 +69,8 @@ Swrite	init p4
 Sinstrs[]	init ginchnls
 arec[]		init ginchnls
 
-Sinstr		strget	p4
-Sname		strget	p5
+Sinstr	init	p4
+Sname		init	p5
 
 indx		init 0
 until	indx == ginchnls do
@@ -85,7 +85,7 @@ arec	chngeta Sinstrs
 	endin
 
 	instr 950
-Sinstr	strget	p4
+Sinstr	init	p4
 prints "%s is clear\n", Sinstr
 	chnclear Sinstr
 	xtratim giXTRATIM

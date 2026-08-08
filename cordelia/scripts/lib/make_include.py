@@ -9,8 +9,9 @@ includes = []
 for path in directory.rglob("*.orc"):
 	if 'include' in str(path):
 		continue
-	includes.append(f'#include "{path}"')
-
+	rel_path = path.relative_to(directory / 'orc')
+	includes.append(f'#include "{rel_path}"')
+ 
 includes.sort()
 
 cordelia.path.include.write_text("\n".join(includes))

@@ -22,11 +22,11 @@ def resolve_func(instrument, items: list) -> list:
 				# Join as expression string
 				expr_str = ''.join(str(x) for x in processed)
 				result.append(expr_str)
-				
+
 		elif isinstance(item, Func):
 				# Process Func items recursively
 				processed_items = resolve_func(instrument, item.items)
-				
+
 				# Create new Func with processed items
 				new_func = Func(item.name, processed_items)
 				result.append(deduce_function(instrument, new_func))

@@ -1,6 +1,5 @@
 import re
 from decimal import Decimal
-import numpy as np
 from corpus.qualities.dyn import *
 from cordelia.registry.data import data
 

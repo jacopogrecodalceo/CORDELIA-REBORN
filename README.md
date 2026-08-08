@@ -11,6 +11,12 @@ We prefer {} to (), but you can use both.
 
 But w8 — wtf is ISOCORDELIA? Like isorhythm, it could be a live coding style.
 
+# *CORDELIA*, a theatrical piece
+so each time we just address to someone something: like `@aaron·eu 3 8 in 8`, this simply means «ehi, aaron! how r u? can u please make me an euclidean rhythm of 3 onsets over 8? thank you!».
+But wait, we are missing something. `@aaron` is someone who likes to receive more precise information about how it should play. What about pitch? 
+
+There's simply *2 kind of people*: variable and instrument. Guess what? they still have the same address. The address is `@`.
+
 ## *CORDELIA*'s HOLY PRINCIPLEs
 - always start with a **blank empty page**
 - **each parameter** has **consequences** and **reaction** on all others 

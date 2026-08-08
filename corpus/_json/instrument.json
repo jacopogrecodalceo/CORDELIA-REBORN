@@ -7,6 +7,10 @@
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/loki.orc"
    },
+   "josciln": {
+      "kind": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/josciln.orc"
+   },
    "joscil": {
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/joscil.orc"
@@ -14,6 +18,10 @@
    "repuck": {
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/repuck.orc"
+   },
+   "lokin": {
+      "kind": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/lokin.orc"
    },
    "voyager": {
       "kind": "orc",
@@ -31,9 +39,17 @@
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/anal.orc"
    },
+   "tigre1": {
+      "kind": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/tigre1.orc"
+   },
    "tiny": {
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/tiny.orc"
+   },
+   "tigre2": {
+      "kind": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/tigre2.orc"
    },
    "anal2": {
       "kind": "orc",
@@ -42,6 +58,10 @@
    "aaron": {
       "kind": "orc",
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/aaron.orc"
+   },
+   "joscils": {
+      "kind": "orc",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/orc/joscils.orc"
    },
    "noij": {
       "kind": "orc",
@@ -124,6 +144,46 @@
       "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/orp.wav",
       "template_stem": "_saka2",
       "pitch": "30.444670001117675184332256321795284748077392578125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "dirty_t": {
+      "kind": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/dirty.wav",
+      "template_stem": "_t",
+      "pitch": "30.88955825495703066962960292585194110870361328125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "dirty": {
+      "kind": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/dirty.wav",
+      "template_stem": "_",
+      "pitch": "30.88955825495703066962960292585194110870361328125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "dirty_bb": {
+      "kind": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/dirty.wav",
+      "template_stem": "_bb",
+      "pitch": "30.88955825495703066962960292585194110870361328125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "dirty_saka": {
+      "kind": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/dirty.wav",
+      "template_stem": "_saka",
+      "pitch": "30.88955825495703066962960292585194110870361328125",
+      "channels": 1,
+      "sr": 48000
+   },
+   "dirty_saka2": {
+      "kind": "wav",
+      "path": "/Users/j/Documents/PROJECTs/CORDELIA-REBORN/corpus/instr/sonvs/dirty.wav",
+      "template_stem": "_saka2",
+      "pitch": "30.88955825495703066962960292585194110870361328125",
       "channels": 1,
       "sr": 48000
    },

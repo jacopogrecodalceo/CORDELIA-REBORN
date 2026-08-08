@@ -30,7 +30,9 @@ def _build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
 	cs = ctcsound.Csound()
 	for f in flags:
 		cs.setOption(f)
+		print(f)
 	orc = build_orchestra()
+	print(orc)
 	if cs.compileOrcAsync(orc) != 0:
 		raise RuntimeError("orchestra compilation failed")
 	cs.start()

@@ -1,0 +1,15 @@
+
+
+
+
+@pulse 10+osc{60 1/3 giasquare}
+
+
+@concat23·16·hz 4 8 2 8
+
+
+
+@tigre1·eu 4 in 8
+
+@tigre2·eu 5 8 in 32
+

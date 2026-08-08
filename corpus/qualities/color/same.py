@@ -1,3 +1,4 @@
+import re
 from corpus.qualities import *
 from cordelia.models.types import QualityStage
 
@@ -15,8 +16,10 @@ def main(args):
 
 	target_instr_uid = items[0]
 	target_instr = None
+	if not re.search(r'_\d+$', target_instr_uid):
+		target_instr_uid += '_1'
 	for node in nodes:
-		if target_instr_uid in node.identity.uid:
+		if target_instr_uid == node.identity.uid:
 			target_instr = node
 
 	if target_instr is None:
