@@ -1,3 +1,17 @@
+""" import os
+import sys
+
+if not os.environ.get("CORDELIA_MALLOC_DEBUG"):
+	env = os.environ.copy()
+	env.update({
+		"MallocScribble": "1",
+		"MallocPreScribble": "1",
+		"MallocGuardEdges": "1",
+		"MallocErrorAbort": "1",
+		"CORDELIA_MALLOC_DEBUG": "1",
+	})
+	os.execve(sys.executable, [sys.executable] + sys.argv, env) """
+
 import time
 import signal
 import threading
@@ -28,6 +42,9 @@ stop_event = threading.Event()
 def _build_csound() -> tuple[ctcsound.Csound, ctcsound.CsoundPerformanceThread]:
 	init()
 	cs = ctcsound.Csound()
+
+	cs.createMessageBuffer(toStdOut=False)
+
 	for f in flags:
 		cs.setOption(f)
 		print(f)
@@ -83,13 +100,27 @@ def _csound_monitor_fn(pt: ctcsound.CsoundPerformanceThread) -> None:
 	stop_event.set()
 
 def _record(pt: ctcsound.CsoundPerformanceThread) -> None:
-	pt.record(str(OUTPUT_SCORE_PATH), 24, 4) 
+	pt.record(str(OUTPUT_SCORE_PATH), 24, 16) 
 
+def _csound_log_thread_fn(cs: ctcsound.Csound) -> None:
+	while not stop_event.is_set():
+		while cs.messageCnt() > 0:
+			msg = cs.firstMessage()
+			logger.debug(f"csound | {msg.rstrip()}")
+			cs.popFirstMessage()
+		time.sleep(QUERY_UDP_WHILE_SLEEP_TIME)
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-
+	logger.add(
+		f"{str(OUTPUT_SCORE_PATH)}.log",
+		level="DEBUG",
+		rotation="50 MB",
+		retention="14 days",
+		backtrace=True,
+		diagnose=True,
+	)
 	cs, pt = _build_csound()
 
 	worker = UDPWorker(UDPRouter(UDP_PORTs))
@@ -98,6 +129,7 @@ def main() -> None:
 	threads = [
 		threading.Thread(target=_csound_monitor_fn, args=(pt,),			daemon=True, name="csound_monitor"),
 		threading.Thread(target=_record, args=(pt,),							daemon=True, name="record_csound"),
+		threading.Thread(target=_csound_log_thread_fn, args=(cs,), 		daemon=True, name="csound_log"),
 		threading.Thread(target=_udp_thread_fn,      args=(worker,),	daemon=True, name="udp"),
 		threading.Thread(target=_scheduler_thread_fn, args=(cs, pt),	daemon=True, name="scheduler"),
 	]

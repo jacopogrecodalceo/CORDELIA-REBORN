@@ -11,7 +11,7 @@ OUTPUT_JSON = cordelia.path.instr_corpus_json
 
 EXCLUDEs = ['__header']
 
-instrs = {}
+instrs = {}   
 
 def add_orcs():
 	for path in INPUT_DIR.rglob(f"*.orc"):
@@ -20,6 +20,7 @@ def add_orcs():
 			raise ValueError(f'DUPLICATE NAME: {name}')
 		if name.startswith('_'):
 			continue
+		console.print(f'adding ORC {name}..')
 		instrs[name] = {
 			'kind': 'orc',
 			'path': str(path)
@@ -42,12 +43,14 @@ def create_templates(sonvs_name):
 	return res
 
 def add_wavs():
-	for path in INPUT_DIR.rglob(f"*.wav"):
+	sonvs_dir = INPUT_DIR / 'sonvs'
+	for path in sonvs_dir.glob(f"*.wav"):
 		wav_name = path.stem
 		channels, sr, main_f0 = anal_wav(path)
 		for sonvs_name, template_stem in create_templates(wav_name):
 			if sonvs_name in instrs:
 				raise ValueError(f'DUPLICATE NAME: {sonvs_name} in {instrs}')
+			console.print(f'adding WAV {sonvs_name}..')
 			instrs[sonvs_name] = {
 				'kind': 'wav',
 				'path': str(path),
@@ -62,9 +65,13 @@ def make_json():
 	with open(OUTPUT_JSON, 'w') as f:
 		json.dump(instrs, f, indent=3)  # Added indent for readability
 
+
+console.print(f'BEGIN')
+
 add_orcs()
 add_wavs()
 make_json()
 
 # Fixed: use the correct path
+console.print(f'END')
 console.print(f'written @{OUTPUT_JSON}')

@@ -1,9 +1,9 @@
 from cordelia.const import FTGEN_SIZE, TALEA_RESAMPLE_LEN
-from cordelia.path import csound
+import cordelia.path 
 
 CHANNELs = 2
-CSOUND_nchnls = 4
-OFF_CHANNEL = 2
+CSOUND_nchnls = 2
+OFF_CHANNEL = 0
 
 SR = 48000
 KSMPS = 64
@@ -34,7 +34,8 @@ flags = [
    
    '-m2', # hide rtevent
    
-   f'--env:INCDIR={str(csound / 'orc')}',
+   f'--env:INCDIR={str(cordelia.path.csound / 'orc')}',
+   f'--env:SSDIR={str(cordelia.path.instr_corpus_dir)}',
    
    "-+id_artist=jacopo greco d'alceo",
 ]
@@ -43,6 +44,7 @@ init_settings = [
    "; BEGIN CORDELIA SETTINGS",
 
    f"ginchnls init {CHANNELs}",
+   f"giCHs init {CHANNELs}",
    f"giOFF_CH init {OFF_CHANNEL}",
    
    "gimainclock_ch init 0",

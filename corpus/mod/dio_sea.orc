@@ -26,9 +26,9 @@ itime		init i(gkBEATs)/9
 idbthresh	init 5
 koct, kdyn_	pitch ain, itime, ilow, ihigh, idbthresh
 kres_cps    = cpsoct(koct)
+
 asea        resonx ain, kres_cps*4, kfreq/4, 4, 2
 asea        buthp asea/powoftwo(13), 20
-asea        limit asea, -.95, .95
 
 kdyn_comp   pow (kfreq / giNYQUIST), -0.45
 aout        sum asea, alpf*kdyn_comp

@@ -43,7 +43,7 @@ asat 		tone asat, 9500
 aout		= (1 - gksoul_tape_wet) * aout + gksoul_tape_wet * asat
 
 aout		butterhp aout, 20
-aout		limit aout, -.95, .95
+;aout		limit aout, -.95, .95
 	outch giOFF_CH+ich+1, aout
 
 ;garecorder[ich] = aout

@@ -17,7 +17,7 @@ iord -- linear predictor order.
 */
 
 isize		init 8192
-iord		init 512
+iord		init 256
 kprd		init isize/8
 kport   	abs jitter(1/12, 1/12, 1)
 
@@ -25,7 +25,15 @@ kport   	abs jitter(1/12, 1/12, 1)
 from rpr ancient wisdom:
 kcfs[], krms, kerr, kf lpcanal kread, 1, ich, isize, iord, gihanning
 */
-kcfs[], krms, kerr, kf lpcanal ain, 1, kprd, isize, iord
+kflag 			init 1
+/* kprd_count	 	init 0
+if kprd_count % 16 == 0 then
+	kflag = 1
+else
+	kflag = 0
+endif */
+
+kcfs[], krms, kerr, kf lpcanal ain, kflag, kprd, isize, iord
 
 kf_temp		init 0
 kf_last		init 0
@@ -52,6 +60,7 @@ ain		delay ain, isize/sr, isize/sr
 aout		sum ain*(1-kwet), aout, askf*2
 
 	xout aout
+;	kprd_count += 1
 	endop
 
 

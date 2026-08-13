@@ -113,15 +113,19 @@ class InstrumentRuntime(SharedRuntime):
 
 	def release(self) -> None:
 		orcs = [csound_comment_line('RELEASE')]
-		for ft_num in self.ft_num.values():
-			pool.ft.release(ft_num)
-			orcs.append(f'; ft num released {ft_num}')
 
 		orcs.append(f'turnoff2_i "{self.instrument.identity.uid}", 0, 0')
-		emit_orc_lines(orcs)
 
 		self.clear.release()
 		self.bridge.release()
+
+		for ft_num in self.ft_num.values():
+			pool.ft.release(ft_num)
+			orcs.append(f'ftfree {ft_num}, 0')
+			orcs.append(f'; ft num released {ft_num}')
+
+		emit_orc_lines(orcs)
+
 
 class VariableRuntime(SharedRuntime):
 	"""Owns everything that only exists while a variable is active."""

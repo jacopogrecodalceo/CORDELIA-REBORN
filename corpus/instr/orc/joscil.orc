@@ -16,13 +16,7 @@ gijoscil_tuning 	init cent(85)
 	irootnote2cps = A4 * pow(2, (inote - 69) / 12)
 	iratio = icps*gijoscil_tuning / irootnote2cps
 
-	if inote < 10 then
-		Snote sprintf "0%i", inote
-	else
-		Snote sprintf "%i", inote
-	endif
-
-	Spath sprintf "%s/joscil-%s.wav", gSjoscil_path, Snote
+	Spath sprintf "%s/joscil-%s.wav", gSjoscil_path, pad(inote, 2)
 	;prints sprintf("%s\n", Spath )
 
 	ains[] diskin Spath, iratio, random:i(0, .005)

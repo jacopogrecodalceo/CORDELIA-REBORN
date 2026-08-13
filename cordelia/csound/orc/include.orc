@@ -17,6 +17,7 @@
 #include "2-head/GEN/3-window/hanning.orc"
 #include "2-head/cordelia_envgen.orc"
 #include "2-head/envgen.orc"
+#include "2-head/pad.orc"
 #include "2-head/tie_status.orc"
 #include "3-body/1-ORGAN.orc"
 #include "3-body/3-SOUL.orc"
